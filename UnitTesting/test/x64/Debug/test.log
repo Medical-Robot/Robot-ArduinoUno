@@ -1,8 +1,8 @@
 ﻿  main.cpp
-C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\test\main.cpp(172,11): warning C4805: '==': unsafe mix of type 'float' and type 'bool' in operation
-C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\test\main.cpp(177,16): warning C4805: '==': unsafe mix of type 'float' and type 'bool' in operation
-C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\test\main.cpp(182,16): warning C4805: '==': unsafe mix of type 'float' and type 'bool' in operation
-C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\test\main.cpp(190,11): warning C4805: '==': unsafe mix of type 'float' and type 'bool' in operation
-C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\test\main.cpp(195,16): warning C4805: '==': unsafe mix of type 'float' and type 'bool' in operation
-C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\test\main.cpp(200,16): warning C4805: '==': unsafe mix of type 'float' and type 'bool' in operation
-  test.vcxproj -> C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\test\x64\Debug\test.exe
+C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\arduino\Robot-ArduinoUno\UnitTesting\test\main.cpp(189,11): warning C4805: '==': unsafe mix of type 'float' and type 'bool' in operation
+C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\arduino\Robot-ArduinoUno\UnitTesting\test\main.cpp(194,16): warning C4805: '==': unsafe mix of type 'float' and type 'bool' in operation
+C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\arduino\Robot-ArduinoUno\UnitTesting\test\main.cpp(199,16): warning C4805: '==': unsafe mix of type 'float' and type 'bool' in operation
+C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\arduino\Robot-ArduinoUno\UnitTesting\test\main.cpp(207,11): warning C4805: '==': unsafe mix of type 'float' and type 'bool' in operation
+C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\arduino\Robot-ArduinoUno\UnitTesting\test\main.cpp(212,16): warning C4805: '==': unsafe mix of type 'float' and type 'bool' in operation
+C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\arduino\Robot-ArduinoUno\UnitTesting\test\main.cpp(217,16): warning C4805: '==': unsafe mix of type 'float' and type 'bool' in operation
+  test.vcxproj -> C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\arduino\Robot-ArduinoUno\UnitTesting\test\x64\Debug\test.exe

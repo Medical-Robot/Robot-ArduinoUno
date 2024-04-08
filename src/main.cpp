@@ -1,101 +1,94 @@
 #include <StandardCplusplus.h>
 #include <Arduino.h>
-#include <Wire.h>
+#include <QTRSensors.h>
 
-#define SLAVE_ADDRESS 9
+// This example is designed for use with six analog QTR sensors. These
+// reflectance sensors should be connected to analog pins A0 to A5. The
+// sensors' emitter control pin (CTRL or LEDON) can optionally be connected to
+// digital pin 2, or you can leave it disconnected and remove the call to
+// setEmitterPin().
+//
+// The setup phase of this example calibrates the sensors for ten seconds and
+// turns on the Arduino's LED (usually on pin 13) while calibration is going
+// on. During this phase, you should expose each reflectance sensor to the
+// lightest and darkest readings they will encounter. For example, if you are
+// making a line follower, you should slide the sensors across the line during
+// the calibration phase so that each sensor can get a reading of how dark the
+// line is and how light the ground is. Improper calibration will result in
+// poor readings.
+//
+// The main loop of the example reads the calibrated sensor values and uses
+// them to estimate the position of a line. You can test this by taping a piece
+// of 3/4" black electrical tape to a piece of white paper and sliding the
+// sensor across it. It prints the sensor values to the serial monitor as
+// numbers from 0 (maximum reflectance) to 1000 (minimum reflectance) followed
+// by the estimated location of the line as a number from 0 to 5000. 1000 means
+// the line is directly under sensor 1, 2000 means directly under sensor 2,
+// etc. 0 means the line is directly under sensor 0 or was last seen by sensor
+// 0 before being lost. 5000 means the line is directly under sensor 5 or was
+// last seen by sensor 5 before being lost.
 
-#define MOTORS_LEFT_IN1_PIN1 9
-#define MOTORS_LEFT_IN2_PIN2 3
-#define MOTORS_RIGHT_IN3_PIN1 6
-#define MOTORS_RIGHT_IN4_PIN2 5
+QTRSensors qtr;
 
-void receiveEvent(int bytes)
-{
-  while (Wire.available())
-  {
-    char c = Wire.read();
-    Serial.print(c);
-  }
-  Serial.println();
-}
+const uint8_t SensorCount = 6;
+uint16_t sensorValues[SensorCount];
 
 void setup()
 {
-  // put your setup code here, to run once:
-  pinMode(MOTORS_LEFT_IN1_PIN1, OUTPUT);
-  pinMode(MOTORS_LEFT_IN2_PIN2, OUTPUT);
-  pinMode(MOTORS_RIGHT_IN3_PIN1, OUTPUT);
-  pinMode(MOTORS_RIGHT_IN4_PIN2, OUTPUT);
+  // configure the sensors
+  qtr.setTypeAnalog();
+  qtr.setSensorPins((const uint8_t[]){A0, A1, A2, A3, A4, A5}, SensorCount);
+  qtr.setEmitterPin(2);
 
-  Wire.begin(SLAVE_ADDRESS);
-  Wire.onReceive(receiveEvent);
+  delay(500);
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH); // turn on Arduino's LED to indicate we are in calibration mode
+
+  // analogRead() takes about 0.1 ms on an AVR.
+  // 0.1 ms per sensor * 4 samples per sensor read (default) * 6 sensors
+  // * 10 reads per calibrate() call = ~24 ms per calibrate() call.
+  // Call calibrate() 400 times to make calibration take about 10 seconds.
+  for (uint16_t i = 0; i < 400; i++)
+  {
+    qtr.calibrate();
+  }
+  digitalWrite(LED_BUILTIN, LOW); // turn off Arduino's LED to indicate we are through with calibration
+
+  // print the calibration minimum values measured when emitters were on
   Serial.begin(9600);
-      while (!Serial){
-      delay(100);
-    }
-  
-  Serial.println("Arduino Started");
-  delay(100);
-}
+  for (uint8_t i = 0; i < SensorCount; i++)
+  {
+    Serial.print(qtr.calibrationOn.minimum[i]);
+    Serial.print(' ');
+  }
+  Serial.println();
 
-void moveBackwards(int pin1, int pin2, int val)
-{
-  analogWrite(pin1, val);
-  analogWrite(pin2, LOW);
-}
-
-void moveForward(int pin1, int pin2, int val)
-{
-  analogWrite(pin1, LOW);
-  analogWrite(pin2, val);
-}
-
-void rotateMoveRight360(int speed)
-{
-  moveForward(MOTORS_LEFT_IN1_PIN1, MOTORS_LEFT_IN2_PIN2, speed);
-  moveBackwards(MOTORS_RIGHT_IN3_PIN1, MOTORS_RIGHT_IN4_PIN2, speed);
-}
-
-void rotateMoveLeft360(int speed)
-{
-  moveBackwards(MOTORS_LEFT_IN1_PIN1, MOTORS_LEFT_IN2_PIN2, speed);
-  moveForward(MOTORS_RIGHT_IN3_PIN1, MOTORS_RIGHT_IN4_PIN2, speed);
+  // print the calibration maximum values measured when emitters were on
+  for (uint8_t i = 0; i < SensorCount; i++)
+  {
+    Serial.print(qtr.calibrationOn.maximum[i]);
+    Serial.print(' ');
+  }
+  Serial.println();
+  Serial.println();
+  delay(1000);
 }
 
 void loop()
 {
-  
-  // float startTime = 0.0f;
+  // read calibrated sensor values and obtain a measure of the line position
+  // from 0 to 5000 (for a white line, use readLineWhite() instead)
+  uint16_t position = qtr.readLineBlack(sensorValues);
 
-  /*
-startTime = (float) millis();
-while (((float)millis() - startTime) < 5000) {
-  rotateMoveRight360(255);
-}
+  // print the sensor values as numbers from 0 to 1000, where 0 means maximum
+  // reflectance and 1000 means minimum reflectance, followed by the line
+  // position
+  for (uint8_t i = 0; i < SensorCount; i++)
+  {
+    Serial.print(sensorValues[i]);
+    Serial.print('\t');
+  }
+  Serial.println(position);
 
-startTime = (float) millis();
-while (((float)millis() - startTime) < 5000) {
-  rotateMoveRight360(128);
-}
-*/
-
-  // startTime = (float) millis();
-  // while (((float)millis() - startTime) < 5000) {
-  //   rotateMoveRight360(64);
-  // }
-
-  // Controlling speed (0   = off and 255 = max speed):
-  // analogWrite(MOTORS_LEFT_IN1_PIN1,   HIGH);
-  // analogWrite(MOTORS_LEFT_IN2_PIN2, LOW);
-
-  // analogWrite(MOTORS_RIGHT_IN3_PIN1, HIGH);
-  // analogWrite(MOTORS_RIGHT_IN4_PIN2, LOW);
-  // delay(3000);
-
-  // analogWrite(MOTORS_LEFT_IN1_PIN1,   LOW);
-  // analogWrite(MOTORS_LEFT_IN2_PIN2, HIGH);
-
-  // analogWrite(MOTORS_RIGHT_IN3_PIN1, LOW);
-  // analogWrite(MOTORS_RIGHT_IN4_PIN2, HIGH);
-  // delay(3000);
+  delay(250);
 }

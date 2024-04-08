@@ -228,7 +228,7 @@ private:
 class LineFollower
 {
 public:
-	LineFollower(SteeringController &steeringWeel){
+	LineFollower(SteeringController &steeringWeel) : SteeringWeel(steeringWeel){
 		setLineSensorPins(-1, -1, -1, -1, -1);
 	}
 	void setLineSensorPins(int LineSensorLeft2Pin, int LineSensorLeft1Pin, int LineSensorMiddlePin, int LineSensorRight1Pin, int LineSensorRight2Pin) {
@@ -248,6 +248,10 @@ public:
 			LineSensorRight2RawValue = analogRead(LineSensorRight2Pin);
 		#endif
 	}
+
+	void logic() {
+		this->readLineSensors();
+	}
 	
 	~LineFollower(){}
 
@@ -262,6 +266,7 @@ private:
 	float LineSensorLeft2RawValue;
 	float LineSensorRight1RawValue;
 	float LineSensorRight2RawValue;
+	SteeringController& SteeringWeel;
 };
 
 
