@@ -2,6 +2,16 @@
 #include <Arduino.h>
 #include <QTRSensors.h>
 
+/*
+  White offset
+  S1: 75
+  S2: 55
+  S3: 56
+  S4: 74
+  S5: 82
+*/
+
+
 // This example is designed for use with six analog QTR sensors. These
 // reflectance sensors should be connected to analog pins A0 to A5. The
 // sensors' emitter control pin (CTRL or LEDON) can optionally be connected to
@@ -30,14 +40,14 @@
 
 QTRSensors qtr;
 
-const uint8_t SensorCount = 6;
+const uint8_t SensorCount = 5;
 uint16_t sensorValues[SensorCount];
 
 void setup()
 {
   // configure the sensors
   qtr.setTypeAnalog();
-  qtr.setSensorPins((const uint8_t[]){A0, A1, A2, A3, A4, A5}, SensorCount);
+  qtr.setSensorPins((const uint8_t[]){A0, A1, A2, A3, A4}, SensorCount);
   qtr.setEmitterPin(2);
 
   delay(500);
