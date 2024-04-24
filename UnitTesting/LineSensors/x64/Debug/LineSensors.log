@@ -1,0 +1,14 @@
+﻿  main.cpp
+C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\LineSensors\PurePursuitGeometry.h(41,2): warning C4091: 'typedef ': ignored on left of 'ParabolaABC' when no variable is declared
+C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\LineSensors\PurePursuitGeometry.h(229,42): warning C4805: '==': unsafe mix of type 'bool' and type 'float' in operation
+C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\LineSensors\PurePursuitGeometry.h(543,17): warning C4305: 'return': truncation from 'double' to 'float'
+C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\LineSensors\PurePursuitGeometry.h(551,18): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\LineSensors\PurePursuitGeometry.h(555,17): warning C4305: 'return': truncation from 'double' to 'float'
+C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\LineSensors\PurePursuitGeometry.h(563,18): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\LineSensors\PurePursuitGeometry.h(809,97): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\LineSensors\PurePursuitGeometry.h(848,97): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\LineSensors\LineSensors.h(61,21): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\LineSensors\LineSensors.h(77,21): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\LineSensors\LineSensors.h(25,9): warning C4101: 'tempAverage': unreferenced local variable
+C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\LineSensors\LineSensors.h(110,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+  LineSensors.vcxproj -> C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\LineSensors\x64\Debug\LineSensors.exe
