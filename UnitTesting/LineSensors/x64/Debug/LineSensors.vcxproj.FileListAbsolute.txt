@@ -1,1 +1,2 @@
 C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\LineSensors\x64\Debug\LineSensors.exe
+C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\arduino\Robot-ArduinoUno\UnitTesting\LineSensors\x64\Debug\LineSensors.exe

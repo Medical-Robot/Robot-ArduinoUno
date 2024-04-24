@@ -20,16 +20,15 @@ public:
 	}
 	
 	// returns an interval between -1 and 1 where 0 is the middle sensor, -1 is the left sensor and 1 is the right sensor
-	float ReadSensors(float* sensorsReadings) {
-		float LinePosition = 0.0f;
+	Point2D ReadSensors(float* sensorsReadings) {
 		float tempAverage;
 		float middleSensorDistance = (((float)this->NumberOfSensors-1) / 2.0f);
 		int MaxValueSensorIndex;
 		ParabolaABC parabola;
-		Point2D middleLine = {0.0f, 0.0f};
+		Point2D middleLine = {-2.0f, -1.0f};
 
 		if (this->NumberOfSensors <= 0) {
-			return -2;
+			return middleLine;
 		}
 		for (size_t i = 0; i < this->NumberOfSensors; i++) {
 			this->LineColorSensorsPercentage[i] = (sensorsReadings[i] - this->BackgroundColorOnlyCalibrationAvarages[i]) / (this->LineColorOlyCalibrationAvarages[i] - this->BackgroundColorOnlyCalibrationAvarages[i]);
@@ -79,10 +78,10 @@ public:
 			}
 		}
 
-		LinePosition = middleLine.x - middleSensorDistance;
-		LinePosition = LinePosition / middleSensorDistance;
+		middleLine.x = middleLine.x - middleSensorDistance;
+		middleLine.x = middleLine.x / middleSensorDistance;
 
-		return LinePosition;
+		return middleLine;
 	}
 	~LineSensors() {
 		delete this->BackgroundColorOnlyCalibrationAvarages;

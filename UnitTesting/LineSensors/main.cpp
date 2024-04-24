@@ -11,7 +11,7 @@ int main() {
 	middleLine = parabolaVertex(parabola);
 
 	float arr[5] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
-	float res;
+	Point2D res;
 	LineSensors sensors(5);
 	sensors.SetBackgroundColorOnlyCalibrationAvarages(arr);
 	arr[0] = 1.0f;
