@@ -112,6 +112,11 @@ void loop()
   Serial.print("Posy:" + String(linePosition.x));
   Serial.print('\t');
 
+/*
+Pos_x: -1   Left: -1    Right: +1
+
+
+*/
 
   if (linePosition.x < 0.0f) {
     left_track_speed_cercentage = PID_Kp * (((linePosition.x) * speed) / speed);
