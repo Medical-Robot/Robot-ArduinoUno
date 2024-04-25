@@ -74,9 +74,10 @@ void readLineSensors(float* sensorsReadings_){
 void setup()
 {
   Serial.begin(9600);
+  /*
   while (!Serial) {
     delay(100);
-  }
+  }*/
 
   pinMode(MOTORS_LEFT_IN1_PIN1, OUTPUT);
   pinMode(MOTORS_LEFT_IN2_PIN2, OUTPUT);
@@ -118,24 +119,34 @@ Pos_x: -1   Left: -1    Right: +1
 
 */
 
+float PID_out_right, PID_out_left;
+
   if (linePosition.x < 0.0f) {
-    left_track_speed_cercentage = PID_Kp * (((linePosition.x) * speed) / speed);
-    right_track_speed_cercentage = PID_Kp * (((1.0f - linePosition.x) * speed) / speed);
-  }
-  else if (linePosition.x > 0.0f) {
-    right_track_speed_cercentage = PID_Kp * (((-linePosition.x) * speed) / speed);
-    left_track_speed_cercentage = PID_Kp * (((1.0f + linePosition.x) * speed) / speed);
+    PID_out_right = 1.0f;
+    if (linePosition.x <= (-0.5f)) {
+      PID_out_left = (linePosition.x + 0.5f) * 2.0f;
+    }
+    else{
+      PID_out_left = ((0.5f) + linePosition.x) * 2.0f;
+    }
   }
   else{
-    right_track_speed_cercentage = PID_Kp * (1.0f);
-    left_track_speed_cercentage = PID_Kp * (1.0f);
+    PID_out_left = 1.0f;
+    if (linePosition.x <= (0.5f)) {
+      PID_out_right = (0.5f - linePosition.x) * 2.0f;
+    }
+    else{
+      PID_out_right = ((-linePosition.x) + 0.5f) * 2.0f;
+    }
   }
   
-/*
-  right_track_speed_cercentage = PID_Kp * (((1.0 - linePosition.x) * speed) / speed);
-  left_track_speed_cercentage = PID_Kp * (((1.0f + linePosition.x) * speed) / speed);
+  PID_out_right = PID_out_right * PID_Kp;
+  PID_out_left = PID_out_left * PID_Kp;
 
-*/
+  right_track_speed_cercentage = PID_out_right;
+  left_track_speed_cercentage = PID_out_left;
+
+
   left_track_speed_cercentage = MIN(left_track_speed_cercentage, 1.0f);
   left_track_speed_cercentage = MAX(left_track_speed_cercentage, -0.9f);
   right_track_speed_cercentage = MIN(right_track_speed_cercentage, 1.0f);
