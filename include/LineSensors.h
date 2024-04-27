@@ -107,7 +107,7 @@ public:
 		float polyfit_max_roots[3];
 		ParabolaABC parabola;
 		Point2D middleLine = { -2.0f, -1.0f };
-		Point2D color_max, color_min, temp_point2d;
+		Point2D color_max = { -2.0f, -1.0f }, color_min = { -2.0f, -1.0f }, temp_point2d = { -2.0f, -1.0f };
 		int isSetColor_max = 0, isSetColor_min = 0;
 
 		if (this->NumberOfSensors <= 0) {
