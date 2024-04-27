@@ -113,15 +113,18 @@ void loop()
   middleLineMaxMin = lineSensors.ReadSensors(sensorsReadings);
   blackLinePositionX = middleLineMaxMin.max.x;
   blackLinePositionY = middleLineMaxMin.max.y;
-  Serial.print("Posx:" + String(blackLinePositionX));
+  Serial.print("Max Posx:" + String(blackLinePositionX));
   Serial.print('\t');
-  Serial.print("Posy:" + String(blackLinePositionY));
+  Serial.print("Max Posy:" + String(blackLinePositionY));
+  Serial.print('\t');
+  Serial.print("Min Posx:" + String(middleLineMaxMin.min.x));
+  Serial.print('\t');
+  Serial.print("Min Posy:" + String(middleLineMaxMin.min.y));
   Serial.print('\t');
 
 /*
 Pos_x: -1   Left: -1    Right: +1
 */
-
 
 
   if (blackLinePositionX < 0.0f) {
@@ -159,6 +162,17 @@ Pos_x: -1   Left: -1    Right: +1
   Serial.print("left_track:" + String(left_track_speed_cercentage));
   Serial.print('\t');
   Serial.print("right_track:" + String(right_track_speed_cercentage));
+
+  if (middleLineMaxMin.min.y >= 0.5f)
+  {
+    Serial.print('\t');
+    Serial.print("Checkpoint detected");
+    speed = 0.0f;
+  }
+  else{
+    speed = 0.5f;
+  }
+
   Serial.println();
   //steeringController.write(1.0f, 1.0f, 1.0f);
   steeringController.write(speed, left_track_speed_cercentage, right_track_speed_cercentage);
