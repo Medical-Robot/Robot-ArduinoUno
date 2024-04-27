@@ -4,6 +4,11 @@
 #include "cubic.c"
 #include "polyfit.h"
 
+struct Point2DMinMax{
+	Point2D max;
+	Point2D min;
+};
+
 class LineSensors
 {
 public:
@@ -97,7 +102,7 @@ public:
 		return middleLine;
 	}
 
-	Point2D ReadSensors(float* sensorsReadings) {
+	struct Point2DMinMax ReadSensors(float* sensorsReadings) {
 		float tempAverage;
 		float middleSensorDistance = (((float)this->NumberOfSensors - 1) / 2.0f);
 		int MaxValueSensorIndex;
@@ -109,9 +114,12 @@ public:
 		Point2D middleLine = { -2.0f, -1.0f };
 		Point2D color_max = { -2.0f, -1.0f }, color_min = { -2.0f, -1.0f }, temp_point2d = { -2.0f, -1.0f };
 		int isSetColor_max = 0, isSetColor_min = 0;
+		struct Point2DMinMax result;
+		result.max = color_max;
+		result.min = color_min;
 
 		if (this->NumberOfSensors <= 0) {
-			return middleLine;
+			return result;
 		}
 		for (size_t i = 0; i < this->NumberOfSensors; i++) {
 			this->LineColorSensorsPercentage[i] = (sensorsReadings[i] - this->BackgroundColorOnlyCalibrationAvarages[i]) / (this->LineColorOlyCalibrationAvarages[i] - this->BackgroundColorOnlyCalibrationAvarages[i]);
@@ -146,12 +154,16 @@ public:
 			}
 		}
 
-		middleLine = color_max;
+		result.max = color_max;
+		result.min = color_min;
 
-		middleLine.x = middleLine.x - middleSensorDistance;
-		middleLine.x = middleLine.x / middleSensorDistance;
+		result.max.x = result.max.x - middleSensorDistance;
+		result.max.x = result.max.x / middleSensorDistance;
 
-		return middleLine;
+		result.min.x = result.min.x - middleSensorDistance;
+		result.min.x = result.min.x / middleSensorDistance;
+
+		return result;
 	}
 	~LineSensors() {
 		delete this->BackgroundColorOnlyCalibrationAvarages;

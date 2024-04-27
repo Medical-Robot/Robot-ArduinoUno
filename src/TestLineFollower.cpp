@@ -103,41 +103,43 @@ void setup()
 float speed = 0.5f;
 float right_track_speed_cercentage = 1.0f;
 float left_track_speed_cercentage = 1.0f;
+float PID_out_right, PID_out_left;
+struct Point2DMinMax middleLineMaxMin;
+float blackLinePositionX, blackLinePositionY;
 
 void loop()
 {
   readLineSensors(sensorsReadings);
-  linePosition = lineSensors.ReadSensors(sensorsReadings);
-  Serial.print("Posx:" + String(linePosition.x));
+  middleLineMaxMin = lineSensors.ReadSensors(sensorsReadings);
+  blackLinePositionX = middleLineMaxMin.max.x;
+  blackLinePositionY = middleLineMaxMin.max.y;
+  Serial.print("Posx:" + String(blackLinePositionX));
   Serial.print('\t');
-  Serial.print("Posy:" + String(linePosition.x));
+  Serial.print("Posy:" + String(blackLinePositionY));
   Serial.print('\t');
 
 /*
 Pos_x: -1   Left: -1    Right: +1
-
-
 */
 
 
-float PID_out_right, PID_out_left;
 
-  if (linePosition.x < 0.0f) {
+  if (blackLinePositionX < 0.0f) {
     PID_out_right = 1.0f;
-    if (linePosition.x <= (-0.5f)) {
-      PID_out_left = (linePosition.x + 0.5f) * 2.0f;
+    if (blackLinePositionX <= (-0.5f)) {
+      PID_out_left = (blackLinePositionX + 0.5f) * 2.0f;
     }
     else{
-      PID_out_left = ((0.5f) + linePosition.x) * 2.0f;
+      PID_out_left = ((0.5f) + blackLinePositionX) * 2.0f;
     }
   }
   else{
     PID_out_left = 1.0f;
-    if (linePosition.x <= (0.5f)) {
-      PID_out_right = (0.5f - linePosition.x) * 2.0f;
+    if (blackLinePositionX <= (0.5f)) {
+      PID_out_right = (0.5f - blackLinePositionX) * 2.0f;
     }
     else{
-      PID_out_right = ((-linePosition.x) + 0.5f) * 2.0f;
+      PID_out_right = ((-blackLinePositionX) + 0.5f) * 2.0f;
     }
   }
   
