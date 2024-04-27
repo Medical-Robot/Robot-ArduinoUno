@@ -93,6 +93,24 @@ static LineABC yAxisABC() {
 	return line;
 }
 
+// polynomial_coefficients[0] = x^2
+// polynomial_coefficients[1] = x
+// polynomial_coefficients[3] = 1
+// polynomial_degree = 2
+static Point2D polyval(float* polynomial_coefficients, int polynomial_degree, float x) {
+	float y = 0.0f;
+	float x_power = 1.0f;
+	Point2D result;
+
+	for (int i = polynomial_degree; i >= 0; i--) {
+		y += polynomial_coefficients[i] * x_power;
+		x_power = x_power * x;
+	}
+	result.x = x;
+	result.y = y;
+	return result;
+}
+
 
 static int gaussianElimination3(float A[3][3 + 1], float x[3], int n) {
 	int j, i, k;
@@ -207,12 +225,12 @@ static int gaussianElimination2(float A[2][2 + 1], float x[2], int n) {
 static ParabolaABC points2parabola_3(Point2D point1, Point2D point2, Point2D point3) {
 	ParabolaABC resultParabola;
 	int res;
-	float A[3][3 + 1] =	{ {point1.x * point1.x, point1.x, 1.0f, point1.y},
+	float A[3][3 + 1] = { {point1.x * point1.x, point1.x, 1.0f, point1.y},
 						  {point2.x * point2.x, point2.x, 1.0f, point2.y},
 						  {point3.x * point3.x, point3.x, 1.0f, point3.y}
 	};
 	float x[3];
-	
+
 	res = gaussianElimination3(A, x, 3);
 	if (res != CONSISTENT_ECUATION_SYSTEM) {
 		memset(&resultParabola, 0, sizeof(ParabolaABC));
@@ -221,7 +239,7 @@ static ParabolaABC points2parabola_3(Point2D point1, Point2D point2, Point2D poi
 	resultParabola.A = x[0];
 	resultParabola.B = x[1];
 	resultParabola.C = x[2];
-	
+
 	return resultParabola;
 }
 

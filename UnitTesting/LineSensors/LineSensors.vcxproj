@@ -128,10 +128,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="LineSensors.h" />
+    <ClInclude Include="polyfit.h" />
+    <ClInclude Include="Polynomial.h" />
+    <ClInclude Include="PolynomialRootFinder.h" />
     <ClInclude Include="PurePursuitGeometry.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="cubic.c" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="polyfit.cpp" />
+    <ClCompile Include="Polynomial.cpp" />
+    <ClCompile Include="PolynomialRootFinder.cpp" />
+    <ClCompile Include="PolynomialTest.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
