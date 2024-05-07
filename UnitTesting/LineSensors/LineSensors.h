@@ -97,7 +97,7 @@ public:
 		return middleLine;
 	}
 
-	Point2D ReadSensors(float* sensorsReadings) {
+	void ReadSensors(float* sensorsReadings) {
 		float tempAverage;
 		float middleSensorDistance = (((float)this->NumberOfSensors - 1) / 2.0f);
 		int MaxValueSensorIndex;
@@ -109,14 +109,26 @@ public:
 		Point2D middleLine = { -2.0f, -1.0f };
 		Point2D color_max, color_min, temp_point2d;
 		int isSetColor_max = 0, isSetColor_min = 0;
+		float* temp_LineColorSensorsPercentage = new float[this->NumberOfSensors+2];
+		float* temp_sensorXposition = new float[this->NumberOfSensors+2];
 
 		if (this->NumberOfSensors <= 0) {
-			return middleLine;
+			//return middleLine;
+			return;
 		}
 		for (size_t i = 0; i < this->NumberOfSensors; i++) {
 			this->LineColorSensorsPercentage[i] = (sensorsReadings[i] - this->BackgroundColorOnlyCalibrationAvarages[i]) / (this->LineColorOlyCalibrationAvarages[i] - this->BackgroundColorOnlyCalibrationAvarages[i]);
 		}
-		rVal = polyfit(5, this->sensorXposition, this->LineColorSensorsPercentage, 5, polyfit_result);
+		/*
+		memcpy(&(temp_LineColorSensorsPercentage[1]), this->LineColorSensorsPercentage, this->NumberOfSensors * sizeof(float));
+		temp_LineColorSensorsPercentage[0] = 0.0f;
+		temp_LineColorSensorsPercentage[this->NumberOfSensors + 1] = 0.0f;
+
+		memcpy(&(temp_sensorXposition[1]), this->sensorXposition, this->NumberOfSensors * sizeof(float));
+		temp_sensorXposition[0] = -1.0f;
+		temp_sensorXposition[this->NumberOfSensors + 1] = (float)(this->NumberOfSensors);
+		*/
+		rVal = polyfit(this->NumberOfSensors, sensorXposition, LineColorSensorsPercentage, 5, polyfit_result);
 		polyder(polyfit_result, 5, polyder_result);
 		n_roots = solve_cubic(polyder_result[0], polyder_result[1], polyder_result[2], polyder_result[3], polyfit_max_roots);
 
@@ -148,22 +160,40 @@ public:
 
 		middleLine = color_max;
 
+		max_value = color_max;
+		max_value.x = max_value.x - middleSensorDistance;
+		max_value.x = max_value.x / middleSensorDistance;
+
+		min_value = color_min;
+		min_value.x = min_value.x - middleSensorDistance;
+		min_value.x = min_value.x / middleSensorDistance;
+
 		middleLine.x = middleLine.x - middleSensorDistance;
 		middleLine.x = middleLine.x / middleSensorDistance;
 
-		return middleLine;
+		//return middleLine;
 	}
 	~LineSensors() {
 		delete this->BackgroundColorOnlyCalibrationAvarages;
 		delete this->LineColorOlyCalibrationAvarages;
 		delete this->LineColorSensorsPercentage;
 	}
+	Point2D getMaxValue() {
+		return max_value;
+	}
+
+	Point2D getMinValue() {
+		return min_value;
+	}
+
 private:
 	size_t NumberOfSensors;
 	float* BackgroundColorOnlyCalibrationAvarages = nullptr;
 	float* LineColorOlyCalibrationAvarages = nullptr;
 	float* LineColorSensorsPercentage = nullptr;
 	float* sensorXposition = nullptr;
+	Point2D max_value;
+	Point2D min_value;
 
 
 	int MaxValueIndexFloatArray(float* arr, size_t arraySize) {
