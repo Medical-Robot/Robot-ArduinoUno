@@ -40,7 +40,7 @@ int main() {
 	arr[2] = 0.0f;
 	arr[3] = 0.0f;
 	arr[4] = 0.0f;
-	sensors.ReadSensors(arr);
+	sensors.ReadSensors2(arr);
 	res = sensors.getMaxValue();
 
 
@@ -49,7 +49,7 @@ int main() {
 	arr[2] = 0.0f;
 	arr[3] = 0.0f;
 	arr[4] = 0.0f;
-	sensors.ReadSensors(arr);
+	sensors.ReadSensors2(arr);
 	res = sensors.getMaxValue();
 
 	arr[0] = 0.6f;
@@ -99,7 +99,7 @@ int main() {
 	printf("\n");
 	
 	
-	sensors.ReadSensors(arr);
+	sensors.ReadSensors2(arr);
 	res = sensors.getMaxValue();
 	res = sensors.getMinValue();
 

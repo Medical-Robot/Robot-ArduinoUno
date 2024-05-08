@@ -33,21 +33,22 @@ public:
 	}
 
 	// returns an interval between -1 and 1 where 0 is the middle sensor, -1 is the left sensor and 1 is the right sensor
-	Point2D ReadSensors2(float* sensorsReadings) {
+	void ReadSensors2(float* sensorsReadings) {
 		float tempAverage;
 		float middleSensorDistance = (((float)this->NumberOfSensors - 1) / 2.0f);
-		int MaxValueSensorIndex;
+		int MaxValueSensorIndex, MinValueSensorIndex;
 		ParabolaABC parabola;
-		Point2D middleLine = { -2.0f, -1.0f };
+		Point2D middleLine = { -2.0f, -1.0f }, min_value_temp;
 
 		if (this->NumberOfSensors <= 0) {
-			return middleLine;
+			//return middleLine;
+			return;
 		}
 		for (size_t i = 0; i < this->NumberOfSensors; i++) {
 			this->LineColorSensorsPercentage[i] = (sensorsReadings[i] - this->BackgroundColorOnlyCalibrationAvarages[i]) / (this->LineColorOlyCalibrationAvarages[i] - this->BackgroundColorOnlyCalibrationAvarages[i]);
 		}
 		MaxValueSensorIndex = this->MaxValueIndexFloatArray(this->LineColorSensorsPercentage, this->NumberOfSensors);
-
+		MinValueSensorIndex = this->MinValueIndexFloatArray(this->LineColorSensorsPercentage, this->NumberOfSensors);
 
 		if (this->NumberOfSensors >= 3)
 		{
@@ -59,7 +60,7 @@ public:
 			}
 			else if (MaxValueSensorIndex > 0 && MaxValueSensorIndex >= (this->NumberOfSensors - 1))
 			{
-				if (this->LineColorSensorsPercentage[MaxValueSensorIndex - 2] <= this->LineColorSensorsPercentage[MaxValueSensorIndex - 1])
+				if (this->LineColorSensorsPercentage[MaxValueSensorIndex - 2] < this->LineColorSensorsPercentage[MaxValueSensorIndex - 1])
 				{
 					parabola = points2parabola_3({ (float)(MaxValueSensorIndex - 1), this->LineColorSensorsPercentage[MaxValueSensorIndex - 1] },
 						{ (float)(MaxValueSensorIndex), this->LineColorSensorsPercentage[MaxValueSensorIndex] },
@@ -75,7 +76,7 @@ public:
 			}
 			else if (MaxValueSensorIndex == 0)
 			{
-				if (this->LineColorSensorsPercentage[MaxValueSensorIndex + 2] <= this->LineColorSensorsPercentage[MaxValueSensorIndex + 1])
+				if (this->LineColorSensorsPercentage[MaxValueSensorIndex + 2] < this->LineColorSensorsPercentage[MaxValueSensorIndex + 1])
 				{
 					parabola = points2parabola_3({ (float)(MaxValueSensorIndex + 1), this->LineColorSensorsPercentage[MaxValueSensorIndex + 1] },
 						{ (float)(MaxValueSensorIndex), this->LineColorSensorsPercentage[MaxValueSensorIndex] },
@@ -91,10 +92,56 @@ public:
 			}
 		}
 
+		if (this->NumberOfSensors >= 3)
+		{
+			if (MinValueSensorIndex > 0 && MinValueSensorIndex < (this->NumberOfSensors - 1)) {
+				parabola = points2parabola_3({ (float)(MinValueSensorIndex - 1), this->LineColorSensorsPercentage[MinValueSensorIndex - 1] },
+					{ (float)(MinValueSensorIndex), this->LineColorSensorsPercentage[MinValueSensorIndex] },
+					{ (float)(MinValueSensorIndex + 1), this->LineColorSensorsPercentage[MinValueSensorIndex + 1] });
+				min_value_temp = parabolaVertex(parabola);
+			}
+			else if (MinValueSensorIndex > 0 && MinValueSensorIndex >= (this->NumberOfSensors - 1))
+			{
+				if (this->LineColorSensorsPercentage[MinValueSensorIndex - 2] > this->LineColorSensorsPercentage[MinValueSensorIndex - 1])
+				{
+					parabola = points2parabola_3({ (float)(MinValueSensorIndex - 1), this->LineColorSensorsPercentage[MinValueSensorIndex - 1] },
+						{ (float)(MinValueSensorIndex), this->LineColorSensorsPercentage[MinValueSensorIndex] },
+						{ (float)(MinValueSensorIndex - 2), this->LineColorSensorsPercentage[MinValueSensorIndex - 2] });
+					min_value_temp = parabolaVertex(parabola);
+					min_value_temp.x = fminf((float)(this->NumberOfSensors - 1), min_value_temp.x);
+				}
+				else
+				{
+					min_value_temp.y = this->LineColorSensorsPercentage[MinValueSensorIndex];
+					min_value_temp.x = MinValueSensorIndex;
+				}
+			}
+			else if (MinValueSensorIndex == 0)
+			{
+				if (this->LineColorSensorsPercentage[MinValueSensorIndex + 2] > this->LineColorSensorsPercentage[MinValueSensorIndex + 1])
+				{
+					parabola = points2parabola_3({ (float)(MinValueSensorIndex + 1), this->LineColorSensorsPercentage[MinValueSensorIndex + 1] },
+						{ (float)(MinValueSensorIndex), this->LineColorSensorsPercentage[MinValueSensorIndex] },
+						{ (float)(MinValueSensorIndex + 2), this->LineColorSensorsPercentage[MinValueSensorIndex + 2] });
+					min_value_temp = parabolaVertex(parabola);
+					min_value_temp.x = fminf(0.0f, min_value_temp.x);
+				}
+				else
+				{
+					min_value_temp.y = this->LineColorSensorsPercentage[MinValueSensorIndex];
+					min_value_temp.x = MinValueSensorIndex;
+				}
+			}
+		}
+
 		middleLine.x = middleLine.x - middleSensorDistance;
 		middleLine.x = middleLine.x / middleSensorDistance;
+		max_value = middleLine;
 
-		return middleLine;
+		min_value_temp.x = min_value_temp.x - middleSensorDistance;
+		min_value_temp.x = min_value_temp.x / middleSensorDistance;
+		min_value = min_value_temp;
+		//return middleLine;
 	}
 
 	void ReadSensors(float* sensorsReadings) {
@@ -202,6 +249,21 @@ private:
 		for (int i = 0; i < arraySize; i++)
 		{
 			if (arr[i] > maxValue)
+			{
+				maxValue = arr[i];
+				index = i;
+			}
+		}
+		return index;
+	}
+
+	int MinValueIndexFloatArray(float* arr, size_t arraySize) {
+		float maxValue;
+		size_t index = 0;
+		maxValue = arr[0];
+		for (int i = 1; i < arraySize; i++)
+		{
+			if (arr[i] < maxValue)
 			{
 				maxValue = arr[i];
 				index = i;
