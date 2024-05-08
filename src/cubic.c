@@ -8,6 +8,7 @@
 #define __CUBIC_H__
 //gg2
 //gg3
+//gg4
 #include <math.h>
 #include <float.h>
 
