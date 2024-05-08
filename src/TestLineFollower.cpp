@@ -165,8 +165,7 @@ Pos_x: -1   Left: -1    Right: +1
   Serial.print('\t');
   Serial.print("right_track:" + String(right_track_speed_cercentage));
 
-  if (middleLineMin.y >= 0.5f)
-  {
+  if (middleLineMin.y >= 0.5f) {
     Serial.print('\t');
     Serial.print("Checkpoint detected");
     speed = 0.0f;
