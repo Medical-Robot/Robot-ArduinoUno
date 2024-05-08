@@ -6,7 +6,7 @@
  ****************************************************************************/
 #ifndef __CUBIC_H__
 #define __CUBIC_H__
-
+//gg2
 
 #include <math.h>
 #include <float.h>
