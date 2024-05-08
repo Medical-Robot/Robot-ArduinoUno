@@ -1,0 +1,9 @@
+1- Clasa care se ocupa de Checkpoint si traseu:
+    -Adaugare checkpointuri
+    -nextCheckpointWhatToDo: ce directie sa o ia la checkpoint
+    -Clasa trebuie sa stie care este checkpointul actual
+    -Clasa trebuie sa stie din ce directie vine masina
+
+2- Robotul trebuie sa faca curba la checkpoint in functie de traseu:
+    
+3- O clasa/structura checkpoint pentru a memora informatiile checkpointului
