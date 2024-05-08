@@ -104,22 +104,24 @@ float speed = 0.5f;
 float right_track_speed_cercentage = 1.0f;
 float left_track_speed_cercentage = 1.0f;
 float PID_out_right, PID_out_left;
-struct Point2DMinMax middleLineMaxMin;
+Point2D middleLineMax, middleLineMin;
 float blackLinePositionX, blackLinePositionY;
 
 void loop()
 {
   readLineSensors(sensorsReadings);
-  middleLineMaxMin = lineSensors.ReadSensors(sensorsReadings);
-  blackLinePositionX = middleLineMaxMin.max.x;
-  blackLinePositionY = middleLineMaxMin.max.y;
+  lineSensors.ReadSensors(sensorsReadings);
+  middleLineMax = lineSensors.getMaxValue();
+  middleLineMin = lineSensors.getMinValue();
+  blackLinePositionX = middleLineMax.x;
+  blackLinePositionY = middleLineMax.y;
   Serial.print("Max Posx:" + String(blackLinePositionX));
   Serial.print('\t');
   Serial.print("Max Posy:" + String(blackLinePositionY));
   Serial.print('\t');
-  Serial.print("Min Posx:" + String(middleLineMaxMin.min.x));
+  Serial.print("Min Posx:" + String(middleLineMin.x));
   Serial.print('\t');
-  Serial.print("Min Posy:" + String(middleLineMaxMin.min.y));
+  Serial.print("Min Posy:" + String(middleLineMin.y));
   Serial.print('\t');
 
 /*
@@ -163,7 +165,7 @@ Pos_x: -1   Left: -1    Right: +1
   Serial.print('\t');
   Serial.print("right_track:" + String(right_track_speed_cercentage));
 
-  if (middleLineMaxMin.min.y >= 0.5f)
+  if (middleLineMin.y >= 0.5f)
   {
     Serial.print('\t');
     Serial.print("Checkpoint detected");
