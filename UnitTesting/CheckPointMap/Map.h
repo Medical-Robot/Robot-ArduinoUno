@@ -1,10 +1,10 @@
 #pragma once
 #include <vector>
 
-typedef enum CheckPointDirection_e {LEFT, RIGHT, FRONT, BACK}CheckPointDirection;
+typedef enum CheckPointDirection_e {LEFT, RIGHT, FRONT, BACK, NONE}CheckPointDirection;
 typedef struct CheckPoint_s{
 	int id;
-	enum CheckPointDirection direction;
+	int next_Checkpoint_id;
 	int left_id;
 	int right_id;
 	int front_id;
@@ -26,7 +26,7 @@ public:
 	}
 
 	CheckPointDirection getNextDirection() {
-		return this->nextCheckPoint.direction;
+		return Map::getCheckpointNextDirection(this->nextCheckPoint);
 	}
 
 	void goNextCheckPoint() {
@@ -55,12 +55,31 @@ public:
 		return this->nextCheckPoint;
 	}
 
+	static CheckPointDirection getCheckpointNextDirection(Checkpoint checkpoint) {
+		CheckPointDirection direction;
+		if (checkpoint.next_Checkpoint_id == checkpoint.front_id) {
+			direction = CheckPointDirection::FRONT;
+		}
+		else if (checkpoint.next_Checkpoint_id == checkpoint.back_id) {
+			direction = CheckPointDirection::BACK;
+		}
+		else if (checkpoint.next_Checkpoint_id == checkpoint.left_id) {
+			direction = CheckPointDirection::LEFT;
+		}
+		else if (checkpoint.next_Checkpoint_id == checkpoint.right_id) {
+			direction = CheckPointDirection::RIGHT;
+		}
+		else {
+			direction = CheckPointDirection::NONE;
+		}
+		return direction;
+	}
+
 
 private:
 	std::vector<Checkpoint> checkPoints;
 	Checkpoint previousCheckPoint;
-	Checkpoint nextCheckPoint;
-
+	Checkpoint nextCheckPoint;	
 
 	Checkpoint* findCheckPointById(int checkPointId) {
 		for (size_t i = 0; i < checkPoints.size(); i++)
