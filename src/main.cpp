@@ -1,15 +1,20 @@
 #include <StandardCplusplus.h>
 #include <Arduino.h>
 #include <LineSensors.h>
+#include <SteeringController.h>
+#include <Map.h>
+#include <intersectionSteeringLogic.h>
+
 #define ENABLE_ARDUINO 1
 
 #define MOTORS_LEFT_IN1_PIN1 6
 #define MOTORS_LEFT_IN2_PIN2 5
-
 #define MOTORS_RIGHT_IN3_PIN1 9
 #define MOTORS_RIGHT_IN4_PIN2 3
 
-#include <SteeringController.h>
+#define BLACK_COLOR_THRESHOLD 0.5f
+
+
 // gg
 
 /*
@@ -49,9 +54,12 @@
 
 const float PID_Kp = 1.0f;
 
+int linesensors_pins[TOTAL_LINE_SENSORS] = {LINE_SENSOR_1_PIN, LINE_SENSOR_2_PIN, LINE_SENSOR_3_PIN, LINE_SENSOR_4_PIN, LINE_SENSOR_5_PIN};
 LineSensors lineSensors(TOTAL_LINE_SENSORS);
 float sensorsReadings[TOTAL_LINE_SENSORS];
 Point2D linePosition;
+Map checkpointMap;
+CheckPointDirection checkpointDirection;
 
 SteeringController steeringController(255.0f, 0.0f, -255.0f);
 
@@ -63,13 +71,6 @@ float LineColorOlyCalibrationAvarages[TOTAL_LINE_SENSORS] = {
   581.0f, 572.0f, 557.0f, 586.0f, 588.0f
 };
 
-void readLineSensors(float* sensorsReadings_){
-  sensorsReadings_[0] = analogRead(LINE_SENSOR_1_PIN);
-  sensorsReadings_[1] = analogRead(LINE_SENSOR_2_PIN);
-  sensorsReadings_[2] = analogRead(LINE_SENSOR_3_PIN);
-  sensorsReadings_[3] = analogRead(LINE_SENSOR_4_PIN);
-  sensorsReadings_[4] = analogRead(LINE_SENSOR_5_PIN);
-}
 
 void setup()
 {
@@ -95,9 +96,9 @@ void setup()
   pinMode(LINE_SENSOR_4_PIN, INPUT);
   pinMode(LINE_SENSOR_5_PIN, INPUT);
 
+  lineSensors.setPins(linesensors_pins, TOTAL_LINE_SENSORS);
   lineSensors.SetBackgroundColorOnlyCalibrationAvarages(BackgroundColorOnlyCalibrationAvarages);
   lineSensors.SetLineColorOlyCalibrationAvarages(LineColorOlyCalibrationAvarages);
-  
 }
 
 float speed = 0.5f;
@@ -105,19 +106,16 @@ float right_track_speed_cercentage = 1.0f;
 float left_track_speed_cercentage = 1.0f;
 float PID_out_right, PID_out_left;
 Point2D middleLineMax, middleLineMin;
-float blackLinePositionX, blackLinePositionY;
 
 void loop()
 {
-  readLineSensors(sensorsReadings);
-  lineSensors.ReadSensors(sensorsReadings);
+  lineSensors.read();
   middleLineMax = lineSensors.getMaxValue();
   middleLineMin = lineSensors.getMinValue();
-  blackLinePositionX = middleLineMax.x;
-  blackLinePositionY = middleLineMax.y;
-  Serial.print("Max Posx:" + String(blackLinePositionX));
+
+  Serial.print("Max Posx:" + String(middleLineMax.x));
   Serial.print('\t');
-  Serial.print("Max Posy:" + String(blackLinePositionY));
+  Serial.print("Max Posy:" + String(middleLineMax.y));
   Serial.print('\t');
   Serial.print("Min Posx:" + String(middleLineMin.x));
   Serial.print('\t');
@@ -128,23 +126,50 @@ void loop()
 Pos_x: -1   Left: -1    Right: +1
 */
 
+  if (middleLineMin.y >= BLACK_COLOR_THRESHOLD) {
+    Serial.print('\t');
+    Serial.print("Checkpoint detected");
+    checkpointDirection = checkpointMap.getNextDirection();
+    
+    switch (checkpointDirection)
+    {
+    case CheckPointDirection::FRONT:
+      middleLineMax.x = 0.0f;
+      break;
+    case CheckPointDirection::BACK:
+      break;
+    case CheckPointDirection::LEFT:
+      takeLeft(speed, steeringController, lineSensors, BLACK_COLOR_THRESHOLD);
+      break;
+    case CheckPointDirection::RIGHT:
+      takeRight(speed, steeringController, lineSensors, BLACK_COLOR_THRESHOLD);
+      break;
+    default:
+      middleLineMax.x = 0.0f;
+      break;
+    }
+  }
+  else{
+    speed = 0.5f;
+  }
 
-  if (blackLinePositionX < 0.0f) {
+
+  if (middleLineMax.x < 0.0f) {
     PID_out_right = 1.0f;
-    if (blackLinePositionX <= (-0.5f)) {
-      PID_out_left = (blackLinePositionX + 0.5f) * 2.0f;
+    if (middleLineMax.x <= (-0.5f)) {
+      PID_out_left = (middleLineMax.x + 0.5f) * 2.0f;
     }
     else{
-      PID_out_left = ((0.5f) + blackLinePositionX) * 2.0f;
+      PID_out_left = ((0.5f) + middleLineMax.x) * 2.0f;
     }
   }
   else{
     PID_out_left = 1.0f;
-    if (blackLinePositionX <= (0.5f)) {
-      PID_out_right = (0.5f - blackLinePositionX) * 2.0f;
+    if (middleLineMax.x <= (0.5f)) {
+      PID_out_right = (0.5f - middleLineMax.x) * 2.0f;
     }
     else{
-      PID_out_right = ((-blackLinePositionX) + 0.5f) * 2.0f;
+      PID_out_right = ((-middleLineMax.x) + 0.5f) * 2.0f;
     }
   }
   
@@ -165,14 +190,6 @@ Pos_x: -1   Left: -1    Right: +1
   Serial.print('\t');
   Serial.print("right_track:" + String(right_track_speed_cercentage));
 
-  if (middleLineMin.y >= 0.5f) {
-    Serial.print('\t');
-    Serial.print("Checkpoint detected");
-    speed = 0.0f;
-  }
-  else{
-    speed = 0.5f;
-  }
 
   Serial.println();
   steeringController.write(speed, left_track_speed_cercentage, right_track_speed_cercentage);
