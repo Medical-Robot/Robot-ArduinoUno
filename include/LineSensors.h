@@ -35,7 +35,7 @@ public:
 	}
 
 	// returns an interval between -1 and 1 where 0 is the middle sensor, -1 is the left sensor and 1 is the right sensor
-	void ReadSensors2(float* sensorsReadings) {
+	void processSensors2(float* sensorsReadings) {
 		float tempAverage;
 		float middleSensorDistance = (((float)this->NumberOfSensors - 1) / 2.0f);
 		int MaxValueSensorIndex, MinValueSensorIndex;
@@ -251,7 +251,7 @@ public:
 
 	void read(){
 		this->readSensors(this->LineSensorsRawValues);
-		this->processSensors(this->LineSensorsRawValues);
+		this->processSensors2(this->LineSensorsRawValues);
 	}
 
 private:

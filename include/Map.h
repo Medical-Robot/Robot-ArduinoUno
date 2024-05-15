@@ -29,6 +29,14 @@ public:
 		return Map::getCheckpointNextDirection(this->nextCheckPoint);
 	}
 
+	void setNextCheckPoint(Checkpoint newCheckpoint){
+		this->nextCheckPoint = newCheckpoint;
+	}
+
+	void setPreviousCheckPoint(Checkpoint newCheckpoint){
+		this->previousCheckPoint = newCheckpoint;
+	}
+
 	void goNextCheckPoint() {
 		Checkpoint* temp_nextCheckPoint;
 
