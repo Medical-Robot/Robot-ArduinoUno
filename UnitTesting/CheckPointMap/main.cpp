@@ -1,6 +1,8 @@
 #include "Map.h"
+#include "Path.h"
 
 int main() {
-	Map chackpointMap;
+	Path Path;
+	Map checkpointMap;
 	return 0;
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <Path.h>
 
 typedef struct Checkpoint_s{
 	int id;
@@ -67,6 +68,13 @@ public:
 
 	void setPreviousCheckPoint(Checkpoint newCheckpoint){
 		this->previousCheckPoint = newCheckpoint;
+	}
+
+	static Path findPath(Checkpoint _prevCheckpoint, Checkpoint nexCheckpoint_, Checkpoint destinationCheckpoint_){
+		Path path;
+		
+
+
 	}
 };
 
