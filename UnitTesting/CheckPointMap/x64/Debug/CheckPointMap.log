@@ -1,0 +1,6 @@
+﻿  main.cpp
+C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\arduino\Robot-ArduinoUno\UnitTesting\CheckPointMap\Map.h(24,12): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\arduino\Robot-ArduinoUno\UnitTesting\CheckPointMap\Map.h(33,12): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\arduino\Robot-ArduinoUno\UnitTesting\CheckPointMap\Map.h(276,1): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\arduino\Robot-ArduinoUno\UnitTesting\CheckPointMap\Map.h(151): warning C4715: 'bfs': not all control paths return a value
+  CheckPointMap.vcxproj -> C:\OneDrive\OneDrive - Universitatea Politehnica Timisoara\Programming\arduino\Robot-ArduinoUno\UnitTesting\CheckPointMap\x64\Debug\CheckPointMap.exe

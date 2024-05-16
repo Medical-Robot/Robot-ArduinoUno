@@ -5,10 +5,10 @@ typedef enum CheckPointDirection_e { LEFT, RIGHT, FRONT, BACK, NONE }CheckPointD
 typedef struct PathCheckpoint_s {
 	int id;
 	int next_checkpoint_id;
-	int left_id;
-	int right_id;
-	int front_id;
-	int back_id;
+	int left_id;	// in
+	int right_id;	// out
+	int front_id;	// out
+	int back_id;	// in
 }PathCheckpoint;
 
 class Path
@@ -25,10 +25,6 @@ public:
 		checkPoints.push_back(newCheckpoint);
 	}
 
-	CheckPointDirection getNextDirection() {
-		return Path::getCheckpointNextDirection(this->nextCheckPoint);
-	}
-
 	void setNextCheckPoint(PathCheckpoint newCheckpoint) {
 		this->nextCheckPoint = newCheckpoint;
 	}
@@ -40,14 +36,18 @@ public:
 	void goNextCheckPoint() {
 		PathCheckpoint* temp_nextCheckPoint;
 
-		previousCheckPoint = nextCheckPoint;
-		temp_nextCheckPoint = this->findCheckPointById(previousCheckPoint.id);
+		if (this->nextCheckPoint.id <= 0) {
+			return;
+		}
+
+		this->previousCheckPoint = this->nextCheckPoint;
+		temp_nextCheckPoint = this->findCheckPointById(this->previousCheckPoint.next_checkpoint_id);
 
 		if (temp_nextCheckPoint == NULL) {
-			nextCheckPoint = previousCheckPoint;
+			this->nextCheckPoint = this->previousCheckPoint;
 		}
 		else {
-			nextCheckPoint = *temp_nextCheckPoint;
+			this->nextCheckPoint = *temp_nextCheckPoint;
 		}
 	}
 
@@ -63,8 +63,47 @@ public:
 		return this->nextCheckPoint;
 	}
 
-	static CheckPointDirection getCheckpointNextDirection(PathCheckpoint checkpoint) {
+
+	CheckPointDirection getNextDirection() {
+		return Path::getCheckpointNextDirection(this->nextCheckPoint);
+	}
+
+	CheckPointDirection getCheckpointNextDirection(PathCheckpoint checkpoint) {
 		CheckPointDirection direction;
+		PathCheckpoint nextCheckpoint_temp, *temp_ptr;
+		int temp;
+
+		temp_ptr = findCheckPointById(checkpoint.next_checkpoint_id);
+		if (temp_ptr == NULL) {
+			return CheckPointDirection::NONE;
+		}
+		nextCheckpoint_temp = *temp_ptr;
+
+		if (nextCheckpoint_temp.back_id == checkpoint.id) {
+
+		}
+		else if (nextCheckpoint_temp.front_id == checkpoint.id) {
+			temp = checkpoint.left_id;
+			checkpoint.left_id = checkpoint.right_id;
+			checkpoint.right_id = temp;
+
+			temp = checkpoint.front_id;
+			checkpoint.front_id = checkpoint.back_id;
+			checkpoint.back_id = temp;
+		}
+		else if (nextCheckpoint_temp.left_id == checkpoint.id) {
+
+		}
+		else if (nextCheckpoint_temp.right_id == checkpoint.id) {
+			temp = checkpoint.front_id;
+			checkpoint.front_id = checkpoint.back_id;
+			checkpoint.back_id = temp;
+
+			temp = checkpoint.left_id;
+			checkpoint.left_id = checkpoint.right_id;
+			checkpoint.right_id = temp;
+		}
+
 		if (checkpoint.next_checkpoint_id == checkpoint.front_id) {
 			direction = CheckPointDirection::FRONT;
 		}
