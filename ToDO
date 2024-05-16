@@ -1,6 +1,6 @@
 ESP-32 implementare cu return de date reciver-transmiter, transmiter-reciver.
 1 - Luni test intersectie.
 2 - Luni comenzi telefon ce sa faca la un checkpoint.
-3 - Marti baza de date (vezi la ESP-32) si arhitectura sau tipul de la baza de date.
+3 - Marti comunicare baza de date (vezi la ESP-32).
 4 - Marti rf-id pe masinuta -> baza de date.
 5 - Marti/Luni Aplicatie mobila bluetooth cu comenzi manuale, fata spate.
