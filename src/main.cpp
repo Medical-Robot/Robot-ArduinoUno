@@ -2,7 +2,7 @@
 #include <Arduino.h>
 #include <LineSensors.h>
 #include <SteeringController.h>
-#include <Map.h>
+#include <Path.h>
 #include <intersectionSteeringLogic.h>
 
 #define ENABLE_ARDUINO 1
@@ -58,7 +58,7 @@ int linesensors_pins[TOTAL_LINE_SENSORS] = {LINE_SENSOR_1_PIN, LINE_SENSOR_2_PIN
 LineSensors lineSensors(TOTAL_LINE_SENSORS);
 float sensorsReadings[TOTAL_LINE_SENSORS];
 Point2D linePosition;
-Map checkpointMap;
+Path path;
 CheckPointDirection checkpointDirection;
 
 SteeringController steeringController(255.0f, 0.0f, -255.0f);
@@ -128,8 +128,8 @@ Pos_x: -1   Left: -1    Right: +1
 
   if (middleLineMin.y >= BLACK_COLOR_THRESHOLD) {
     Serial.print('\t');
-    Serial.print("Checkpoint detected");
-    checkpointDirection = checkpointMap.getNextDirection();
+    Serial.print("PathCheckpoint detected");
+    checkpointDirection = path.getNextDirection();
     
     switch (checkpointDirection)
     {
