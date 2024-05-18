@@ -6,6 +6,7 @@
 
 #define MAX_CHECKPOINT_ID 15000
 
+#define CHECKPOINT_SIZE 20
 typedef struct Checkpoint_s {
 	int id;
 	int left_id;
