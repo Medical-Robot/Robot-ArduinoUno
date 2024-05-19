@@ -207,7 +207,7 @@ public:
 		serializeJson(doc, this->buffer);
 	}
 
-	void read(HardwareSerial& connection){
+	void read(TwoWire& connection){
 		int data;
 		if (this->isReceiving_ == false) {
 			return;
@@ -228,13 +228,12 @@ public:
 		}
 	}
 
-	void write(HardwareSerial& connection){
+	void write(TwoWire& connection){
 		int data;
 		if (this->isSending_ == false) {
 			return;
 		}
-		connection.println(buffer);
-		/*
+		
 		while (connection.availableForWrite() > 0 && this->messageCompleted == false)
 		{
 			if (this->bytesSent == buffer.length()) {
@@ -243,7 +242,7 @@ public:
 			}
 			connection.write(buffer[this->bytesSent]);
 			this->bytesSent += 1;
-		}*/
+		}
 	}
 
 	bool isMessageCompleted(){
