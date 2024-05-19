@@ -96,10 +96,10 @@ void loop(){
   }
 
   if (parser.isReceiving()) {
-    parser.read(Wire);
+    parser.read(Serial);
   }
   else if (parser.isSending()) {
-    parser.write(Wire);
+    parser.write(Serial);
   }
     
 

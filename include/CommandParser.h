@@ -192,7 +192,7 @@ public:
 		serializeJsonPretty(doc, this->buffer);
 	}
 
-	void read(TwoWire& connection){
+	void read(HardwareSerial& connection){
 		int data;
 		if (this->isReceiving_ == false) {
 			return;
@@ -211,7 +211,7 @@ public:
 		}
 	}
 
-	void write(TwoWire& connection){
+	void write(HardwareSerial& connection){
 		int data;
 		if (this->isSending_ == false) {
 			return;
