@@ -1,0 +1,12 @@
+htonll	KEYWORD2
+htonl	KEYWORD2
+htons	KEYWORD2
+htonf	KEYWORD2
+htond	KEYWORD2
+
+ntohll	KEYWORD2
+ntohl	KEYWORD2
+ntohs	KEYWORD2
+ntohf	KEYWORD2
+ntohd	KEYWORD2
+

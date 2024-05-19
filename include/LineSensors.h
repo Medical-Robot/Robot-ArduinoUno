@@ -13,6 +13,8 @@ public:
 		this->LineColorOlyCalibrationAvarages = new float[NumberOfSensors_];
 		this->LineColorSensorsPercentage = new float[NumberOfSensors_];
 		this->sensorXposition = new float[NumberOfSensors_];
+		this->sensorPins = new int[NumberOfSensors_];
+		this->LineSensorsRawValues = new float[NumberOfSensors_];
 		for (size_t i = 0; i < NumberOfSensors_; i++)
 		{
 			this->sensorXposition[i] = i;
@@ -33,7 +35,7 @@ public:
 	}
 
 	// returns an interval between -1 and 1 where 0 is the middle sensor, -1 is the left sensor and 1 is the right sensor
-	void ReadSensors2(float* sensorsReadings) {
+	void processSensors2(float* sensorsReadings) {
 		float tempAverage;
 		float middleSensorDistance = (((float)this->NumberOfSensors - 1) / 2.0f);
 		int MaxValueSensorIndex, MinValueSensorIndex;
@@ -144,7 +146,7 @@ public:
 		//return middleLine;
 	}
 
-	void ReadSensors(float* sensorsReadings) {
+	void processSensors(float* sensorsReadings) {
 		float tempAverage;
 		float middleSensorDistance = (((float)this->NumberOfSensors - 1) / 2.0f);
 		int MaxValueSensorIndex;
@@ -224,6 +226,8 @@ public:
 		delete this->BackgroundColorOnlyCalibrationAvarages;
 		delete this->LineColorOlyCalibrationAvarages;
 		delete this->LineColorSensorsPercentage;
+		delete this->sensorPins;
+		delete this->LineSensorsRawValues;
 	}
 	Point2D getMaxValue() {
 		return max_value;
@@ -233,12 +237,31 @@ public:
 		return min_value;
 	}
 
+	void setPins(int *pinArray, size_t nPins){
+		this->sensorPins = new int[nPins];
+		memcpy(sensorPins, pinArray, sizeof(int) * nPins);
+	}
+
+	void readSensors(float* sensorsReadings){
+		for (size_t i = 0; i < NumberOfSensors; i++) {
+			sensorsReadings[i] = analogRead(this->sensorPins[i]);
+		}
+		
+	}
+
+	void read(){
+		this->readSensors(this->LineSensorsRawValues);
+		this->processSensors2(this->LineSensorsRawValues);
+	}
+
 private:
 	size_t NumberOfSensors;
+	float* LineSensorsRawValues = nullptr;
 	float* BackgroundColorOnlyCalibrationAvarages = nullptr;
 	float* LineColorOlyCalibrationAvarages = nullptr;
 	float* LineColorSensorsPercentage = nullptr;
 	float* sensorXposition = nullptr;
+	int* sensorPins = nullptr;
 	Point2D max_value;
 	Point2D min_value;
 

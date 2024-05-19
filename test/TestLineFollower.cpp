@@ -175,7 +175,5 @@ Pos_x: -1   Left: -1    Right: +1
   }
 
   Serial.println();
-  //steeringController.write(1.0f, 1.0f, 1.0f);
   steeringController.write(speed, left_track_speed_cercentage, right_track_speed_cercentage);
-  //moveForward(MOTORS_RIGHT_IN3_PIN1, MOTORS_RIGHT_IN4_PIN2, 128);
 }
