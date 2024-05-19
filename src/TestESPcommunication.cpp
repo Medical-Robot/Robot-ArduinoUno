@@ -2,10 +2,12 @@
 #include <Arduino.h>
 #include <ArduinoSTL.h>
 #include <Wire.h>
+
 #include "CommandParser.h"
+#include <SoftwareSerial.h>
 
 #define SLAVE_ADDRESS 9
-
+SoftwareSerial serial2(7, 4); //RX	TX
 MessageParser parser;
 Map checkpointMap;
 Response_CHECKPOINT_MAP resp;
@@ -68,9 +70,9 @@ void setup()
   //Wire.begin(SLAVE_ADDRESS);
   //Wire.onReceive(receiveEvent);
   Serial.begin(9600);
-      while (!Serial){
-      delay(100);
-    }
+  serial2.begin(1200);
+
+  //while (!serial2){ delay(100); }
 
 	setMap();
   
@@ -78,19 +80,24 @@ void setup()
   query.message_type = QueryResponseType::QUERY_CHECKPOINT_MAP;
   resp.message_type = QueryResponseType::RESPONSE_CHECKPOINT_MAP;
   resp.checkpoints = checkpointMap.getCheckPoints();
-  parser.sendMessage(resp);
+  parser.recvMessage();
   delay(100);
 }
 
 void loop(){
+	//Serial.println("Loop");
   if (parser.isMessageCompleted() && parser.isSending()) {
     //Serial.println("Message sent!");
     parser.sendMessage(resp);
   }
-  else if (parser.isMessageCompleted() && parser.isReceiving()) {
+  else if (parser.isMessageCompleted()/* && parser.isReceiving()*/) {
+	Serial.print("Message completed");
+	Serial.println(parser.getMessageType());
+
     if (parser.getMessageType() == QueryResponseType::RESPONSE_CHECKPOINT_MAP) {
+	  Serial.println("RESPONSE_CHECKPOINT_MAP recved");
       resp = parser.getResponse_CHECKPOINT_MAP();
-      //print_Response_CHECKPOINT_MAP(resp);
+      print_Response_CHECKPOINT_MAP(resp);
     }
     else if (parser.getMessageType() == QueryResponseType::QUERY_CHECKPOINT_MAP) {
       query = parser.getQuery_CHECKPOINT_MAP();
@@ -100,10 +107,11 @@ void loop(){
   }
 
   if (parser.isReceiving()) {
-    parser.read(Wire);
+	//Serial.println("Reading");
+    parser.read(serial2);
   }
   else if (parser.isSending()) {
-    parser.write(Wire);
+    parser.write(serial2);
   }
     
 
