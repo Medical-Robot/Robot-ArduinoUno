@@ -1,5 +1,7 @@
 #pragma once
+#include <Arduino.h>
 #include <vector>
+//#include <string>
 #include <stdint.h>
 #include "Map.h"
 #include <Wire.h>
@@ -110,6 +112,7 @@ static void print_Response_CHECKPOINT_MAP(Response_CHECKPOINT_MAP &struc){
 }
 
 
+
 static JsonDocument serialize_Query_CHECKPOINT_MAP(Query_CHECKPOINT_MAP &struc){
 	JsonDocument doc;
 	doc["message_type"] = struc.message_type;
@@ -142,15 +145,27 @@ static JsonDocument serialize_Response_CHECKPOINT_MAP(Response_CHECKPOINT_MAP &s
 	JsonDocument doc;
 
 	doc["message_type"] = struc.message_type;
-	struc.checkpoints.reserve(doc["checkpoints"].size());
+	//struc.checkpoints.reserve(doc["checkpoints"].size());
+	JsonArray checkpoints = doc.createNestedArray("checkpoints");
 	for (size_t i = 0; i < struc.checkpoints.size(); i++) {
-		doc["checkpoints"].add();
-		doc["checkpoints"][i]["id"] = struc.checkpoints[i].id;
-		doc["checkpoints"][i]["front_id"] = struc.checkpoints[i].front_id;
-		doc["checkpoints"][i]["back_id"] = struc.checkpoints[i].back_id;
-		doc["checkpoints"][i]["left_id"] = struc.checkpoints[i].left_id;
-		doc["checkpoints"][i]["right_id"] = struc.checkpoints[i].right_id;
+		JsonObject checkpoint1 = checkpoints.createNestedObject();
+		doc.shrinkToFit();
+		checkpoint1["id"] = struc.checkpoints[i].id;
+		checkpoint1["front_id"] = struc.checkpoints[i].front_id;
+		checkpoint1["back_id"] = struc.checkpoints[i].back_id;
+		checkpoint1["left_id"] = struc.checkpoints[i].left_id;
+		checkpoint1["right_id"] = struc.checkpoints[i].right_id;
 	}
+	
+ // Create a nested JsonObject for "checkpoints"
+ /*
+  JsonArray checkpoints = doc.createNestedArray("checkpoints");
+
+	for (size_t i = 0; i < 2; i++) {
+		JsonObject checkpoint1 = checkpoints.createNestedObject();
+		checkpoint1["id"] = i;
+	}
+	*/
 	return doc;
 }
 
@@ -181,7 +196,7 @@ public:
 		
 		this->sendMessageSettings();
 		doc = serialize_Query_CHECKPOINT_MAP(struc);
-		serializeJsonPretty(doc, this->buffer);
+		serializeJson(doc, this->buffer);
 	}
 
 	void sendMessage(Response_CHECKPOINT_MAP &struc){
@@ -189,7 +204,7 @@ public:
 		
 		this->sendMessageSettings();
 		doc = serialize_Response_CHECKPOINT_MAP(struc);
-		serializeJsonPretty(doc, this->buffer);
+		serializeJson(doc, this->buffer);
 	}
 
 	void read(HardwareSerial& connection){
@@ -204,9 +219,11 @@ public:
 			if (data == 0) {
 				this->messageCompleted = true;
 				deserializeJson(this->recvDoc, this->buffer);
+				this->recvDoc.clear();
 				break;
 			}
-			buffer.push_back((char)data);
+			buffer += (char)data;
+			//buffer.append((char)data);
 			this->bytesReadden += 1;
 		}
 	}
@@ -216,17 +233,17 @@ public:
 		if (this->isSending_ == false) {
 			return;
 		}
-		
+		connection.println(buffer);
+		/*
 		while (connection.availableForWrite() > 0 && this->messageCompleted == false)
 		{
-			data = connection.read();
-			if (this->bytesSent == buffer.size()) {
+			if (this->bytesSent == buffer.length()) {
 				this->messageCompleted = true;
 				break;
 			}
 			connection.write(buffer[this->bytesSent]);
 			this->bytesSent += 1;
-		}
+		}*/
 	}
 
 	bool isMessageCompleted(){
@@ -256,7 +273,7 @@ public:
 	}
 
 private:
-	std::string buffer;
+	String buffer;
 	JsonDocument recvDoc;
 	bool messageCompleted;
 	bool isReceiving_;
@@ -270,7 +287,8 @@ private:
 		this->isSending_ = true;
 		this->bytesReadden = 0;
 		this->bytesSent = 0;
-		this->buffer.clear();
+		//this->buffer.clear();
+		this->buffer = String("");
 		this->recvDoc.clear();
 	}
 
@@ -280,7 +298,8 @@ private:
 		this->isSending_ = false;
 		this->bytesReadden = 0;
 		this->bytesSent = 0;
-		this->buffer.clear();
+		//this->buffer.clear();
+		this->buffer = String("");
 		this->recvDoc.clear();
 	}
 
@@ -290,7 +309,8 @@ private:
 		this->isSending_ = false;
 		this->bytesReadden = 0;
 		this->bytesSent = 0;
-		this->buffer.clear();
+		//this->buffer.clear();
+		this->buffer = String("");
 		this->recvDoc.clear();
 	}
 
