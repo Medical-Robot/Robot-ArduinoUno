@@ -2,8 +2,8 @@
 #include <vector>
 #include <stdint.h>
 #include "Map.h"
-#include "netconv.h"
 #include <Wire.h>
+#include <ArduinoJson.h>
 
 
 typedef enum QueryResponseType {
@@ -17,19 +17,20 @@ typedef enum QueryResponseType {
 
 #define QUERY_CHECKPOINT_MAP_SIZE 1
 typedef struct Query_CHECKPOINT_MAP {
-	uint8_t query_response_type;
+	uint8_t message_type;
 }Query_CHECKPOINT_MAP;
 
 #define RESPONSE_CHECKPOINT_MAP_SIZE 4
 typedef struct Response_CHECKPOINT_MAP {
-	uint8_t query_response_type;
-	int32_t n_checkpoints;
-	Checkpoint* checkpoints;
+	uint8_t message_type;
+	//int32_t n_checkpoints;
+	std::vector<Checkpoint> checkpoints;
+	//Checkpoint* checkpoints;
 }Response_CHECKPOINT_MAP;
 
 #define QUERY_STATUS_SIZE 15
 typedef struct Query_STATUS {
-	uint8_t query_response_type;
+	uint8_t message_type;
 	int32_t prev_checkpoint;
 	int32_t next_checkpoint;
 	uint8_t status;
@@ -39,7 +40,7 @@ typedef struct Query_STATUS {
 
 #define RESPONSE_STATUS_SIZE 17
 typedef struct Response_STATUS {
-	uint8_t query_response_type;
+	uint8_t message_type;
 	int32_t prev_checkpoint;
 	int32_t next_checkpoint;
 	int32_t id_comanda;
@@ -48,35 +49,21 @@ typedef struct Response_STATUS {
 
 #define QUERY_COMANDA_MEDICAMENT_SIZE 5
 typedef struct Query_COMANDA_MEDICAMENT {
-	uint8_t query_response_type;
+	uint8_t message_type;
 	int32_t id_comanda;
 }Query_COMANDA_MEDICAMENT;
 
 #define RESPONSE_COMANDA_MEDICAMENT_SIZE 17
 typedef struct Response_COMANDA_MEDICAMENT {
-	uint8_t query_response_type;
+	uint8_t message_type;
 	int32_t id_comanda;
 	int32_t destiantion_checkpoint_id;
 	int8_t RFID[8];
 }Response_COMANDA_MEDICAMENT;
 
 
-static Checkpoint hton_Checkpoint(Checkpoint& struc) {
-	Checkpoint result;
-	result = struc;
-	result.id = htonl(struc.id);
-	result.left_id = htonl(struc.left_id);
-	result.right_id = htonl(struc.right_id);
-	result.front_id = htonl(struc.front_id);
-	result.back_id = htonl(struc.back_id);
-	return result;
-}
-
-
-
 typedef struct CommsCommand {
-	int8_t query_response_type;
-	int32_t size;
+	int8_t message_type;
 	union {
 		struct Query_CHECKPOINT_MAP map_query;
 		struct Response_CHECKPOINT_MAP map_response;
@@ -87,215 +74,225 @@ typedef struct CommsCommand {
 	}data;
 }CommsCommand;
 
-static Checkpoint ntohl_Checkpoint(Checkpoint& struc) {
-	Checkpoint result;
-	result = struc;
-	result.id = ntohl(struc.id);
-	result.left_id = ntohl(struc.left_id);
-	result.right_id = ntohl(struc.right_id);
-	result.front_id = ntohl(struc.front_id);
-	result.back_id = ntohl(struc.back_id);
-	return result;
+
+
+static void print_Query_CHECKPOINT_MAP(Query_CHECKPOINT_MAP &struc){
+	Serial.print("Query_CHECKPOINT_MAP");
+	Serial.print("\tmessage_type: ");
+	Serial.println(struc.message_type);
 }
 
-static Query_CHECKPOINT_MAP hton_Query_CHECKPOINT_MAP(Query_CHECKPOINT_MAP& struc) {
-	Query_CHECKPOINT_MAP result;
-	result = struc;
-	return result;
-}
+static void print_Response_CHECKPOINT_MAP(Response_CHECKPOINT_MAP &struc){
+	Serial.print("Response_CHECKPOINT_MAP");
+	Serial.print("\tmessage_type: ");
+	Serial.println(struc.message_type);
+	Serial.println("\tCheckpoints");
+	for (size_t i = 0; i < struc.checkpoints.size(); i++)
+	{
+		Serial.print("\t\t");
+		Serial.println(i);
+		Serial.print("\t\tid: ");
+		Serial.println(struc.checkpoints[i].id);
 
-static Query_CHECKPOINT_MAP ntohl_Query_CHECKPOINT_MAP(Query_CHECKPOINT_MAP& struc) {
-	Query_CHECKPOINT_MAP result;
-	result = struc;
-	return result;
-}
+		Serial.print("\t\tfront_id: ");
+		Serial.println(struc.checkpoints[i].front_id);
 
-static Response_CHECKPOINT_MAP hton_Response_CHECKPOINT_MAP(Response_CHECKPOINT_MAP& struc) {
-	Response_CHECKPOINT_MAP result;
-	result = struc;
-	result.n_checkpoints = htonl(struc.n_checkpoints);
-	for (size_t i = 0; i < struc.n_checkpoints; i++) {
-		result.checkpoints[i] = hton_Checkpoint(result.checkpoints[i]);
+		Serial.print("\t\tback_id: ");
+		Serial.println(struc.checkpoints[i].back_id);
+
+		Serial.print("\t\tleft_id: ");
+		Serial.println(struc.checkpoints[i].left_id);
+
+		Serial.print("\t\tright_id: ");
+		Serial.println(struc.checkpoints[i].right_id);
+		Serial.println();
 	}
-	return result;
 }
 
-static Response_CHECKPOINT_MAP ntohl_Response_CHECKPOINT_MAP(Response_CHECKPOINT_MAP& struc) {
-	Response_CHECKPOINT_MAP result;
-	result = struc;
-	result.n_checkpoints = ntohl(struc.n_checkpoints);
-	for (size_t i = 0; i < result.n_checkpoints; i++) {
-		result.checkpoints[i] = ntohl_Checkpoint(result.checkpoints[i]);
+
+static JsonDocument serialize_Query_CHECKPOINT_MAP(Query_CHECKPOINT_MAP &struc){
+	JsonDocument doc;
+	doc["message_type"] = struc.message_type;
+	return doc;
+}
+
+static Query_CHECKPOINT_MAP deserialize_Query_CHECKPOINT_MAP(JsonDocument &doc){
+	Query_CHECKPOINT_MAP struc;
+	struc.message_type = doc["message_type"];
+	return struc;
+}
+
+static Response_CHECKPOINT_MAP deserialize_Response_CHECKPOINT_MAP(JsonDocument &doc){
+	Response_CHECKPOINT_MAP struc;
+	Checkpoint checkpoint;
+	struc.message_type = doc["message_type"];
+	struc.checkpoints.reserve(doc["checkpoints"].size());
+	for (size_t i = 0; i < doc["checkpoints"].size(); i++) {
+		checkpoint.id = doc["checkpoints"][i]["id"];
+		checkpoint.front_id = doc["checkpoints"][i]["front_id"];
+		checkpoint.back_id = doc["checkpoints"][i]["back_id"];
+		checkpoint.left_id = doc["checkpoints"][i]["left_id"];
+		checkpoint.right_id = doc["checkpoints"][i]["right_id"];
+		struc.checkpoints.push_back(checkpoint);
 	}
-	return result;
+	return struc;
 }
 
-static Query_STATUS hton_Query_STATUS(Query_STATUS& struc) {
-	Query_STATUS result;
-	result = struc;
-	result.prev_checkpoint = htonl(struc.prev_checkpoint);
-	result.next_checkpoint = htonl(struc.next_checkpoint);
-	result.id_comanda = htonl(struc.id_comanda);
-	return result;
-}
+static JsonDocument serialize_Response_CHECKPOINT_MAP(Response_CHECKPOINT_MAP &struc){
+	JsonDocument doc;
 
-static Query_STATUS ntohl_Query_STATUS(Query_STATUS& struc) {
-	Query_STATUS result;
-	result = struc;
-	result.prev_checkpoint = ntohl(struc.prev_checkpoint);
-	result.next_checkpoint = ntohl(struc.next_checkpoint);
-	result.id_comanda = ntohl(struc.id_comanda);
-	return result;
-}
-
-static Response_STATUS hton_Response_STATUS(Response_STATUS& struc) {
-	Response_STATUS result;
-	result = struc;
-	result.prev_checkpoint = htonl(struc.prev_checkpoint);
-	result.next_checkpoint = htonl(struc.next_checkpoint);
-	result.id_comanda = htonl(struc.id_comanda);
-	return result;
-}
-
-static Response_STATUS ntohl_Response_STATUS(Response_STATUS& struc) {
-	Response_STATUS result;
-	result = struc;
-	result.prev_checkpoint = ntohl(struc.prev_checkpoint);
-	result.next_checkpoint = ntohl(struc.next_checkpoint);
-	result.id_comanda = ntohl(struc.id_comanda);
-	return result;
-}
-
-static Query_COMANDA_MEDICAMENT hton_Query_COMANDA_MEDICAMENT(Query_COMANDA_MEDICAMENT& struc) {
-	Query_COMANDA_MEDICAMENT result;
-	result = struc;
-	result.id_comanda = htonl(struc.id_comanda);
-	return result;
-}
-
-static Query_COMANDA_MEDICAMENT ntohl_Query_COMANDA_MEDICAMENT(Query_COMANDA_MEDICAMENT& struc) {
-	Query_COMANDA_MEDICAMENT result;
-	result = struc;
-	result.id_comanda = ntohl(struc.id_comanda);
-	return result;
-}
-
-static Response_COMANDA_MEDICAMENT hton_Response_COMANDA_MEDICAMENT(Response_COMANDA_MEDICAMENT& struc) {
-	Response_COMANDA_MEDICAMENT result;
-	result = struc;
-	result.id_comanda = htonl(struc.id_comanda);
-	result.destiantion_checkpoint_id = htonl(struc.destiantion_checkpoint_id);
-	for (size_t i = 0; i < sizeof(result.RFID); i++) {
-		result.RFID[i] = struc.RFID[sizeof(result.RFID) - i];
+	doc["message_type"] = struc.message_type;
+	struc.checkpoints.reserve(doc["checkpoints"].size());
+	for (size_t i = 0; i < struc.checkpoints.size(); i++) {
+		doc["checkpoints"].add();
+		doc["checkpoints"][i]["id"] = struc.checkpoints[i].id;
+		doc["checkpoints"][i]["front_id"] = struc.checkpoints[i].front_id;
+		doc["checkpoints"][i]["back_id"] = struc.checkpoints[i].back_id;
+		doc["checkpoints"][i]["left_id"] = struc.checkpoints[i].left_id;
+		doc["checkpoints"][i]["right_id"] = struc.checkpoints[i].right_id;
 	}
-	return result;
+	return doc;
 }
 
-static Response_COMANDA_MEDICAMENT ntohl_Response_COMANDA_MEDICAMENT(Response_COMANDA_MEDICAMENT& struc) {
-	Response_COMANDA_MEDICAMENT result;
-	result = struc;
-	result.id_comanda = ntohl(struc.id_comanda);
-	result.destiantion_checkpoint_id = ntohl(struc.destiantion_checkpoint_id);
-	for (size_t i = 0; i < sizeof(result.RFID); i++) {
-		result.RFID[i] = struc.RFID[sizeof(result.RFID) - i];
-	}
-	return result;
-}
 
-class CommandParser
+
+
+class MessageParser
 {
 public:
-	~CommandParser() {
+	~MessageParser() {
 	}
-	CommandParser() {
-
+	MessageParser() {
+		this->clear();
 	}
 
-
-	CommsCommand getCommand() {
+/*
+	CommsCommand getMessage() {
 		return command;
+	}
+	*/
+
+	void recvMessage(){
+		this->recvMessageSettings();
+	}
+
+	void sendMessage(Query_CHECKPOINT_MAP &struc){
+		JsonDocument doc;
+		
+		this->sendMessageSettings();
+		doc = serialize_Query_CHECKPOINT_MAP(struc);
+		serializeJsonPretty(doc, this->buffer);
+	}
+
+	void sendMessage(Response_CHECKPOINT_MAP &struc){
+		JsonDocument doc;
+		
+		this->sendMessageSettings();
+		doc = serialize_Response_CHECKPOINT_MAP(struc);
+		serializeJsonPretty(doc, this->buffer);
 	}
 
 	void read(TwoWire& connection){
 		int data;
-		if (connection.available() <= 0) {
+		if (this->isReceiving_ == false) {
 			return;
 		}
 		
-		if(this->bytesReadden <= 0 && connection.available()){
-			data = connection.read();
-			this->command.query_response_type = (int8_t)data;
-		}
-
-		if(this->startedReceiving > 0 && this->startedReceiving < 5 && connection.available()){
-			while (connection.available() && this->bytesReadden < 5)
-			{
-				data = connection.read();
-				((char*)(&(this->command.size)))[this->bytesReadden - 1] = (char)data;
-
-				this->bytesReadden += 1;
-			}
-			if (this->bytesReadden >= 5) {
-				this->command.size = ntohl(this->command.size);
-				this->dataPtr = new char[this->command.size];
-			}
-		}
-
-		while (connection.available() && (this->bytesReadden - 5) < this->command.size)
+		while (connection.available() && this->messageCompleted == false)
 		{
 			data = connection.read();
-			((char*)(this->dataPtr))[this->bytesReadden-5] = (char)data;
-
+			if (data == 0) {
+				this->messageCompleted = true;
+				deserializeJson(this->recvDoc, this->buffer);
+				break;
+			}
+			buffer.push_back((char)data);
 			this->bytesReadden += 1;
-		}
-
-		if ((this->bytesReadden - 5) >= this->command.size && this->commandCompleted == false) {
-			this->commandCompleted = true;
-			this->parseRecvCommand();
 		}
 	}
 
-	typedef enum QueryResponseType {
-	QUERY_CHECKPOINT_MAP,
-	QUERY_COMANDA_MEDICAMENT,
-	QUERY_STATUS,
-	RESPONSE_CHECKPOINT_MAP,
-	RESPONSE_COMANDA_MEDICAMENT,
-	RESPONSE_STATUS
-}QueryType;
+	void write(TwoWire& connection){
+		int data;
+		if (this->isSending_ == false) {
+			return;
+		}
+		
+		while (connection.availableForWrite() > 0 && this->messageCompleted == false)
+		{
+			data = connection.read();
+			if (this->bytesSent == buffer.size()) {
+				this->messageCompleted = true;
+				break;
+			}
+			connection.write(buffer[this->bytesSent]);
+			this->bytesSent += 1;
+		}
+	}
+
+	bool isMessageCompleted(){
+		return this->messageCompleted;
+	}
+
+	bool isSending(){
+		return this->isSending_;
+	}
+
+		bool isReceiving(){
+		return this->isReceiving_;
+	}
+
+	uint8_t getMessageType(){
+		return recvDoc["message_type"];
+	}
+
+	Response_CHECKPOINT_MAP getResponse_CHECKPOINT_MAP(){
+		return deserialize_Response_CHECKPOINT_MAP(this->recvDoc);
+	}
+	Query_CHECKPOINT_MAP getQuery_CHECKPOINT_MAP(){
+		return deserialize_Query_CHECKPOINT_MAP(this->recvDoc);
+	}
 
 	void parseRecvCommand(){
-		switch (this->command.query_response_type)
-		{
-		case QueryResponseType::RESPONSE_COMANDA_MEDICAMENT:
-			this->command.data.comanda_medicament_response = ntohl_Response_COMANDA_MEDICAMENT(*((Response_COMANDA_MEDICAMENT*)(this->dataPtr)));
-			delete this->dataPtr;
-			break;
-		
-		case QueryResponseType::RESPONSE_STATUS:
-			this->command.data.status_response = ntohl_Response_STATUS(*((Response_STATUS*)(this->dataPtr)));
-			delete this->dataPtr;
-			break;
-
-		case QueryResponseType::RESPONSE_CHECKPOINT_MAP:
-			delete this->dataPtr;
-			break;
-		
-		default:
-			break;
-		}
 	}
 
 private:
-	void* dataPtr;
-	bool startedReceiving;
-	bool commandCompleted;
-	bool isReceiving;
-	bool isSending;
+	std::string buffer;
+	JsonDocument recvDoc;
+	bool messageCompleted;
+	bool isReceiving_;
+	bool isSending_;
 	int bytesReadden;
 	int bytesSent;
-	int commandSize;
-	CommsCommand command;
+
+	void sendMessageSettings(){
+		this->messageCompleted = false;
+		this->isReceiving_ = false;
+		this->isSending_ = true;
+		this->bytesReadden = 0;
+		this->bytesSent = 0;
+		this->buffer.clear();
+		this->recvDoc.clear();
+	}
+
+	void recvMessageSettings(){
+		this->messageCompleted = false;
+		this->isReceiving_ = true;
+		this->isSending_ = false;
+		this->bytesReadden = 0;
+		this->bytesSent = 0;
+		this->buffer.clear();
+		this->recvDoc.clear();
+	}
+
+	void clear(){
+		this->messageCompleted = false;
+		this->isReceiving_ = false;
+		this->isSending_ = false;
+		this->bytesReadden = 0;
+		this->bytesSent = 0;
+		this->buffer.clear();
+		this->recvDoc.clear();
+	}
 
 
 };

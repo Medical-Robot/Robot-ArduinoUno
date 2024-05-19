@@ -1,16 +1,10 @@
 #pragma once
 #include <vector>
 #include <stdint.h>
-#include <Winsock2.h>
+#include "Map.h"
+#include "netconv.h"
+#include <Wire.h>
 
-#define CHECKPOINT_SIZE 20
-typedef struct Checkpoint_s {
-	int32_t id;
-	int32_t left_id;
-	int32_t right_id;
-	int32_t front_id;
-	int32_t back_id;
-}Checkpoint;
 
 typedef enum QueryResponseType {
 	QUERY_CHECKPOINT_MAP,
@@ -81,7 +75,8 @@ static Checkpoint hton_Checkpoint(Checkpoint& struc) {
 
 
 typedef struct CommsCommand {
-	uint8_t query_response_type;
+	int8_t query_response_type;
+	int32_t size;
 	union {
 		struct Query_CHECKPOINT_MAP map_query;
 		struct Response_CHECKPOINT_MAP map_response;
@@ -221,12 +216,88 @@ public:
 		return command;
 	}
 
+	void read(TwoWire& connection){
+		int data;
+		if (connection.available() <= 0) {
+			return;
+		}
+		
+		if(this->bytesReadden <= 0 && connection.available()){
+			data = connection.read();
+			this->command.query_response_type = (int8_t)data;
+		}
+
+		if(this->startedReceiving > 0 && this->startedReceiving < 5 && connection.available()){
+			while (connection.available() && this->bytesReadden < 5)
+			{
+				data = connection.read();
+				((char*)(&(this->command.size)))[this->bytesReadden - 1] = (char)data;
+
+				this->bytesReadden += 1;
+			}
+			if (this->bytesReadden >= 5) {
+				this->command.size = ntohl(this->command.size);
+				this->dataPtr = new char[this->command.size];
+			}
+		}
+
+		while (connection.available() && (this->bytesReadden - 5) < this->command.size)
+		{
+			data = connection.read();
+			((char*)(this->dataPtr))[this->bytesReadden-5] = (char)data;
+
+			this->bytesReadden += 1;
+		}
+
+		if ((this->bytesReadden - 5) >= this->command.size && this->commandCompleted == false) {
+			this->commandCompleted = true;
+			this->parseRecvCommand();
+		}
+	}
+
+	typedef enum QueryResponseType {
+	QUERY_CHECKPOINT_MAP,
+	QUERY_COMANDA_MEDICAMENT,
+	QUERY_STATUS,
+	RESPONSE_CHECKPOINT_MAP,
+	RESPONSE_COMANDA_MEDICAMENT,
+	RESPONSE_STATUS
+}QueryType;
+
+	void parseRecvCommand(){
+		switch (this->command.query_response_type)
+		{
+		case QueryResponseType::RESPONSE_COMANDA_MEDICAMENT:
+			this->command.data.comanda_medicament_response = ntohl_Response_COMANDA_MEDICAMENT(*((Response_COMANDA_MEDICAMENT*)(this->dataPtr)));
+			delete this->dataPtr;
+			break;
+		
+		case QueryResponseType::RESPONSE_STATUS:
+			this->command.data.status_response = ntohl_Response_STATUS(*((Response_STATUS*)(this->dataPtr)));
+			delete this->dataPtr;
+			break;
+
+		case QueryResponseType::RESPONSE_CHECKPOINT_MAP:
+			delete this->dataPtr;
+			break;
+		
+		default:
+			break;
+		}
+	}
+
 private:
+	void* dataPtr;
+	bool startedReceiving;
+	bool commandCompleted;
+	bool isReceiving;
+	bool isSending;
+	int bytesReadden;
+	int bytesSent;
+	int commandSize;
 	CommsCommand command;
 
 
 };
-
-
 
 
