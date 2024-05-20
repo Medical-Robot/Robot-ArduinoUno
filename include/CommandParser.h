@@ -140,7 +140,7 @@ static Response_CHECKPOINT_MAP deserialize_Response_CHECKPOINT_MAP(JsonDocument 
 	Checkpoint checkpoint;
 	
 	JsonArray data = doc["cps"];
-	n_checkpoints = data.size() + 3;
+	n_checkpoints = data.size();
 
 	struc.message_type = doc["mt"];
 	struc.checkpoints.reserve(n_checkpoints);
@@ -244,6 +244,8 @@ public:
 				this->messageCompleted = true;
 				DeserializationError err = deserializeJson(this->recvDoc, this->buffer);
 				Serial.println(err.f_str());
+
+				this->buffer = String("");
 				//this->recvDoc.clear();
 				break;
 			}
