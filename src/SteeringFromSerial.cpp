@@ -203,4 +203,5 @@ void loop()
     serialInputBuffer = String("");
     steeringController.write(MaxSpeed, LeftSideSpeedRatio, RightSideSpeedRatio);
   }
+  delay(1);
 }
