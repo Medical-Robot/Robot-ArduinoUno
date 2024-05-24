@@ -1,11 +1,12 @@
 #pragma once
-#include <vector>
+//#include <vector>
 #include <Queue>
 #include <iostream>
 #include "Path.h"
 
 #define MAX_CHECKPOINT_ID 15000
 
+#define CHECKPOINT_SIZE 20
 typedef struct Checkpoint_s {
 	int id;
 	int left_id;
