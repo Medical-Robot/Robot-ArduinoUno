@@ -1,9 +1,15 @@
 #pragma once
+#include <Arduino.h>
 #include <vector>
+//#include <string>
 #include <stdint.h>
 #include "Map.h"
 #include <Wire.h>
 #include <ArduinoJson.h>
+#include <Wire.h>
+#include <SoftwareSerial.h>
+
+//static StaticJsonDocument<512> recvDoc;
 
 
 typedef enum QueryResponseType {
@@ -83,7 +89,11 @@ static void print_Query_CHECKPOINT_MAP(Query_CHECKPOINT_MAP &struc){
 }
 
 static void print_Response_CHECKPOINT_MAP(Response_CHECKPOINT_MAP &struc){
-	Serial.print("Response_CHECKPOINT_MAP");
+	
+	Serial.println("Response_CHECKPOINT_MAP");
+	
+	Serial.println(struc.checkpoints.size());
+	
 	Serial.print("\tmessage_type: ");
 	Serial.println(struc.message_type);
 	Serial.println("\tCheckpoints");
@@ -107,32 +117,41 @@ static void print_Response_CHECKPOINT_MAP(Response_CHECKPOINT_MAP &struc){
 		Serial.println(struc.checkpoints[i].right_id);
 		Serial.println();
 	}
+	
 }
+
 
 
 static JsonDocument serialize_Query_CHECKPOINT_MAP(Query_CHECKPOINT_MAP &struc){
 	JsonDocument doc;
-	doc["message_type"] = struc.message_type;
+	doc["mt"] = struc.message_type;
 	return doc;
 }
 
 static Query_CHECKPOINT_MAP deserialize_Query_CHECKPOINT_MAP(JsonDocument &doc){
 	Query_CHECKPOINT_MAP struc;
-	struc.message_type = doc["message_type"];
+	struc.message_type = doc["mt"];
 	return struc;
 }
 
 static Response_CHECKPOINT_MAP deserialize_Response_CHECKPOINT_MAP(JsonDocument &doc){
 	Response_CHECKPOINT_MAP struc;
+	int n_checkpoints;
 	Checkpoint checkpoint;
-	struc.message_type = doc["message_type"];
-	struc.checkpoints.reserve(doc["checkpoints"].size());
-	for (size_t i = 0; i < doc["checkpoints"].size(); i++) {
-		checkpoint.id = doc["checkpoints"][i]["id"];
-		checkpoint.front_id = doc["checkpoints"][i]["front_id"];
-		checkpoint.back_id = doc["checkpoints"][i]["back_id"];
-		checkpoint.left_id = doc["checkpoints"][i]["left_id"];
-		checkpoint.right_id = doc["checkpoints"][i]["right_id"];
+	
+	JsonArray data = doc["cps"];
+	n_checkpoints = data.size();
+
+	struc.message_type = doc["mt"];
+	struc.checkpoints.reserve(n_checkpoints);
+
+	for (size_t i = 0; i < n_checkpoints; i++) {
+		Serial.println(i);
+		checkpoint.id = doc["cps"][i]["id"];
+		checkpoint.front_id = doc["cps"][i]["fid"];
+		checkpoint.back_id = doc["cps"][i]["bid"];
+		checkpoint.left_id = doc["cps"][i]["lid"];
+		checkpoint.right_id = doc["cps"][i]["rid"];
 		struc.checkpoints.push_back(checkpoint);
 	}
 	return struc;
@@ -141,16 +160,28 @@ static Response_CHECKPOINT_MAP deserialize_Response_CHECKPOINT_MAP(JsonDocument 
 static JsonDocument serialize_Response_CHECKPOINT_MAP(Response_CHECKPOINT_MAP &struc){
 	JsonDocument doc;
 
-	doc["message_type"] = struc.message_type;
-	struc.checkpoints.reserve(doc["checkpoints"].size());
+	doc["mt"] = struc.message_type;
+	//struc.checkpoints.reserve(doc["cps"].size());
+	JsonArray checkpoints = doc.createNestedArray("cps");
 	for (size_t i = 0; i < struc.checkpoints.size(); i++) {
-		doc["checkpoints"].add();
-		doc["checkpoints"][i]["id"] = struc.checkpoints[i].id;
-		doc["checkpoints"][i]["front_id"] = struc.checkpoints[i].front_id;
-		doc["checkpoints"][i]["back_id"] = struc.checkpoints[i].back_id;
-		doc["checkpoints"][i]["left_id"] = struc.checkpoints[i].left_id;
-		doc["checkpoints"][i]["right_id"] = struc.checkpoints[i].right_id;
+		JsonObject checkpoint1 = checkpoints.createNestedObject();
+		doc.shrinkToFit();
+		checkpoint1["id"] = struc.checkpoints[i].id;
+		checkpoint1["fid"] = struc.checkpoints[i].front_id;
+		checkpoint1["bid"] = struc.checkpoints[i].back_id;
+		checkpoint1["lid"] = struc.checkpoints[i].left_id;
+		checkpoint1["rid"] = struc.checkpoints[i].right_id;
 	}
+	
+ // Create a nested JsonObject for "cps"
+ /*
+  JsonArray checkpoints = doc.createNestedArray("cps");
+
+	for (size_t i = 0; i < 2; i++) {
+		JsonObject checkpoint1 = checkpoints.createNestedObject();
+		checkpoint1["id"] = i;
+	}
+	*/
 	return doc;
 }
 
@@ -161,9 +192,12 @@ class MessageParser
 {
 public:
 	~MessageParser() {
+	
 	}
-	MessageParser() {
+	MessageParser(){
+		//this->buf2 = staticJsonBuffer1;
 		this->clear();
+
 	}
 
 /*
@@ -181,7 +215,7 @@ public:
 		
 		this->sendMessageSettings();
 		doc = serialize_Query_CHECKPOINT_MAP(struc);
-		serializeJsonPretty(doc, this->buffer);
+		serializeJson(doc, this->buffer);
 	}
 
 	void sendMessage(Response_CHECKPOINT_MAP &struc){
@@ -189,38 +223,48 @@ public:
 		
 		this->sendMessageSettings();
 		doc = serialize_Response_CHECKPOINT_MAP(struc);
-		serializeJsonPretty(doc, this->buffer);
+		serializeJson(doc, this->buffer);
 	}
 
-	void read(HardwareSerial& connection){
+	void read(SoftwareSerial& connection){
 		int data;
 		if (this->isReceiving_ == false) {
 			return;
 		}
-		
-		while (connection.available() && this->messageCompleted == false)
+
+		//Serial.print("=");
+
+		while (connection.available() /*&& this->messageCompleted == false*/)
 		{
 			data = connection.read();
+			//Serial.print(".");
+			Serial.print((char)data);
 			if (data == 0) {
+				Serial.println();
 				this->messageCompleted = true;
-				deserializeJson(this->recvDoc, this->buffer);
+				DeserializationError err = deserializeJson(this->recvDoc, this->buffer);
+				Serial.println(err.f_str());
+
+				this->buffer = String("");
+				//this->recvDoc.clear();
 				break;
 			}
-			buffer.push_back((char)data);
+			buffer += (char)data;
+			//buffer.append((char)data);
 			this->bytesReadden += 1;
 		}
 	}
 
-	void write(HardwareSerial& connection){
+	void write(SoftwareSerial& connection){
 		int data;
 		if (this->isSending_ == false) {
 			return;
 		}
-		
+
 		while (connection.availableForWrite() > 0 && this->messageCompleted == false)
 		{
-			data = connection.read();
-			if (this->bytesSent == buffer.size()) {
+			if (this->bytesSent == buffer.length()) {
+				connection.write('\0');
 				this->messageCompleted = true;
 				break;
 			}
@@ -241,8 +285,8 @@ public:
 		return this->isReceiving_;
 	}
 
-	uint8_t getMessageType(){
-		return recvDoc["message_type"];
+	int getMessageType(){
+		return (int)(this->recvDoc["mt"]);
 	}
 
 	Response_CHECKPOINT_MAP getResponse_CHECKPOINT_MAP(){
@@ -255,9 +299,15 @@ public:
 	void parseRecvCommand(){
 	}
 
+	String& getBuffer(){
+		return this->buffer;
+	}
+
 private:
-	std::string buffer;
+	String buffer;
+	//StaticJsonDocument &buf2;
 	JsonDocument recvDoc;
+	//JsonDocument recvDoc;
 	bool messageCompleted;
 	bool isReceiving_;
 	bool isSending_;
@@ -270,7 +320,8 @@ private:
 		this->isSending_ = true;
 		this->bytesReadden = 0;
 		this->bytesSent = 0;
-		this->buffer.clear();
+		//this->buffer.clear();
+		this->buffer = String("");
 		this->recvDoc.clear();
 	}
 
@@ -280,7 +331,8 @@ private:
 		this->isSending_ = false;
 		this->bytesReadden = 0;
 		this->bytesSent = 0;
-		this->buffer.clear();
+		//this->buffer.clear();
+		this->buffer = String("");
 		this->recvDoc.clear();
 	}
 
@@ -290,7 +342,8 @@ private:
 		this->isSending_ = false;
 		this->bytesReadden = 0;
 		this->bytesSent = 0;
-		this->buffer.clear();
+		//this->buffer.clear();
+		this->buffer = String("");
 		this->recvDoc.clear();
 	}
 

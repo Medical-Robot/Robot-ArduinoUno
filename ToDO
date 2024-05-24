@@ -1,9 +1,6 @@
-1- Clasa care se ocupa de Checkpoint si traseu:
-    -Adaugare checkpointuri
-    -nextCheckpointWhatToDo: ce directie sa o ia la checkpoint
-    -Clasa trebuie sa stie care este checkpointul actual
-    -Clasa trebuie sa stie din ce directie vine masina
-
-2- Robotul trebuie sa faca curba la checkpoint in functie de traseu:
-    
-3- O clasa/structura checkpoint pentru a memora informatiile checkpointului
+ESP-32 implementare cu return de date reciver-transmiter, transmiter-reciver.
+1 - Luni test intersectie.
+2 - Luni comenzi telefon ce sa faca la un checkpoint.
+3 - Marti comunicare baza de date (vezi la ESP-32).
+4 - Marti rf-id pe masinuta -> baza de date.
+5 - Marti/Luni Aplicatie mobila bluetooth cu comenzi manuale, fata spate.
