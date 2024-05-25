@@ -4,10 +4,10 @@
 
 #define SERIAL_PORT Serial
 
-#define MOTORS_LEFT_IN1_PIN1 6
+#define MOTORS_LEFT_IN1_PIN1 2
 #define MOTORS_LEFT_IN2_PIN2 5
-#define MOTORS_RIGHT_IN3_PIN1 9
-#define MOTORS_RIGHT_IN4_PIN2 3
+#define MOTORS_RIGHT_IN3_PIN1 4
+#define MOTORS_RIGHT_IN4_PIN2 6
 
 
 String serialInputBuffer;
@@ -160,21 +160,21 @@ int parseAndSetGlobalVariables(String& rawData, char variableTerminator = ';') {
 
 	pEnd = rawData.begin();
 	temp_float = parseNextFloat(pEnd, (rawData.length() + rawData.begin()) - pEnd, variableTerminator, &pEnd, &resultSuccess);
-  if (resultSuccess == 0) {
-    return 1;
-  }
+//  if (resultSuccess == 0) {
+ //   return 1;
+ // }
   MaxSpeed = temp_float;
 
   temp_float = parseNextFloat(pEnd, (rawData.length() + rawData.begin()) - pEnd, variableTerminator, &pEnd, &resultSuccess);
-  if (resultSuccess == 0) {
-    return 1;
-  }
+  //if (resultSuccess == 0) {
+  //  return 1;
+  //}
   LeftSideSpeedRatio = temp_float;
 
   temp_float = parseNextFloat(pEnd, (rawData.length() + rawData.begin()) - pEnd, variableTerminator, &pEnd, &resultSuccess);
-  if (resultSuccess == 0) {
-    return 1;
-  }
+  //if (resultSuccess == 0) {
+  //  return 1;
+ // }
   RightSideSpeedRatio = temp_float;
 
   return 0;
@@ -198,7 +198,10 @@ void loop()
     if (parseAndSetGlobalVariables(serialInputBuffer, ';') == 0) {
       printGlobalVariables(SERIAL_PORT);
     }
-    SERIAL_PORT.println(String("Parsing error"));
+    else{
+      SERIAL_PORT.println(String("Parsing error"));
+    }
+    
     
     serialInputBuffer = String("");
     steeringController.write(MaxSpeed, LeftSideSpeedRatio, RightSideSpeedRatio);

@@ -10,11 +10,16 @@
 
 #if ENABLE_ARDUINO == 1
 	void moveBackward(int pin1, int pin2, int val) {
-		analogWrite(pin1, val);
-		analogWrite(pin2, LOW);
-	}
+		val = abs(val);
+		//analogWrite(pin1, val);
+		//analogWrite(pin2, LOW);
 
+		digitalWrite(pin1, HIGH);
+		analogWrite(pin2, val);
+	}
+						//	4		6
 	void moveForward(int pin1, int pin2, int val) {
+		val = abs(val);
 		analogWrite(pin1, LOW);
 		analogWrite(pin2, val);
 	}
@@ -124,11 +129,11 @@ public:
 			RightTrackIsGoingBackward = true;
 		}
 
-		LeftTrackSpeed = temp_LeftTrackSpeed;
-		RightTrackSpeed = temp_RightTrackSpeed;
+		LeftTrackSpeed = fabs(temp_LeftTrackSpeed);
+		RightTrackSpeed = fabs(temp_RightTrackSpeed);
 	}
 
-	void write(float speed_percentage, float left_track_percentage, float right_track_percentage) {
+	virtual void write(float speed_percentage, float left_track_percentage, float right_track_percentage) {
 		speed_percentage = MIN(speed_percentage, 1.0f);
 		speed_percentage = MAX(speed_percentage, -1.0f);
 		left_track_percentage = MIN(left_track_percentage, 1.0f);
@@ -198,12 +203,12 @@ public:
 		}
 		else if (this->RightTrackIsGoingForward == true) {
 			#if ENABLE_ARDUINO == 1
-				moveForward(this->motors_right_in3, this->motors_right_in4, (int)(this->RightTrackSpeed));
+				moveBackward(this->motors_right_in3, this->motors_right_in4, (int)(this->RightTrackSpeed));
 			#endif // ENABLE_ARDUINO == 1
 		}
 		else if (this->RightTrackIsGoingBackward == true) {
 			#if ENABLE_ARDUINO == 1
-				moveBackward(this->motors_right_in3, this->motors_right_in4, (int)(this->RightTrackSpeed));
+				moveForward(this->motors_right_in3, this->motors_right_in4, (int)(this->RightTrackSpeed));
 			#endif // ENABLE_ARDUINO == 1
 		}
 	}
