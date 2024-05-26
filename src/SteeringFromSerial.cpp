@@ -193,13 +193,13 @@ void printGlobalVariables(HardwareSerial& serialPort){
 void loop()
 {
   if(readRecordFromSerial(SERIAL_PORT, String("\r\n"), serialInputBuffer)){
-    SERIAL_PORT.print(String("Input: "));
-    SERIAL_PORT.println(serialInputBuffer);
+    //SERIAL_PORT.print(String("Input: "));
+    //SERIAL_PORT.println(serialInputBuffer);
     if (parseAndSetGlobalVariables(serialInputBuffer, ';') == 0) {
-      printGlobalVariables(SERIAL_PORT);
+      //printGlobalVariables(SERIAL_PORT);
     }
     else{
-      SERIAL_PORT.println(String("Parsing error"));
+      //SERIAL_PORT.println(String("Parsing error"));
     }
     
     
